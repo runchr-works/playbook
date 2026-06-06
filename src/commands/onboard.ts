@@ -1,6 +1,5 @@
 import { createInterface } from "node:readline/promises";
-import { stdin as input, stdout as output } from "node:process";
-import { Writable } from "node:stream";
+import { stdin as input } from "node:process";
 import { commandExists, runCommand } from "./process.js";
 import { saveUserConfig, type HindsightMode, type UserConfig } from "../user-config.js";
 import { startHindsightDaemon } from "./daemon.js";
@@ -8,20 +7,7 @@ import {
   HINDSIGHT_LLM_RECOMMENDATIONS,
   recommendationFor,
 } from "../llm-recommendations.js";
-
-class MaskedOutput extends Writable {
-  muted = false;
-
-  override _write(
-    chunk: Buffer | string,
-    encoding: BufferEncoding,
-    callback: (error?: Error | null) => void,
-  ): void {
-    const value = typeof chunk === "string" ? chunk : chunk.toString(encoding);
-    output.write(this.muted ? value.replace(/[^\r\n]/g, "*") : value);
-    callback();
-  }
-}
+import { MaskedOutput } from "./masked-output.js";
 
 async function ask(
   rl: ReturnType<typeof createInterface>,

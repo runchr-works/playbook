@@ -1,18 +1,10 @@
 import { createInterface } from "node:readline/promises";
-import { stdin as input, stdout as output } from "node:process";
-import { Writable } from "node:stream";
+import { stdin as input } from "node:process";
 import { commandExists, runCommand } from "./process.js";
 import { saveUserConfig } from "../user-config.js";
 import { startHindsightDaemon } from "./daemon.js";
 import { HINDSIGHT_LLM_RECOMMENDATIONS, recommendationFor, } from "../llm-recommendations.js";
-class MaskedOutput extends Writable {
-    muted = false;
-    _write(chunk, encoding, callback) {
-        const value = typeof chunk === "string" ? chunk : chunk.toString(encoding);
-        output.write(this.muted ? value.replace(/[^\r\n]/g, "*") : value);
-        callback();
-    }
-}
+import { MaskedOutput } from "./masked-output.js";
 async function ask(rl, prompt, fallback) {
     const suffix = fallback ? ` [${fallback}]` : "";
     const value = (await rl.question(`${prompt}${suffix}: `)).trim();
