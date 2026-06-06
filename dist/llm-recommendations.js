@@ -1,0 +1,83 @@
+export const HINDSIGHT_LLM_RECOMMENDATIONS = [
+    {
+        provider: "openai",
+        label: "OpenAI",
+        defaultModel: "gpt-4o-mini",
+        alternatives: ["gpt-5-mini", "gpt-5-nano", "gpt-4.1-mini"],
+        apiKeyRequired: true,
+        promotionCompatible: true,
+        defaultBaseUrl: "https://api.openai.com/v1",
+    },
+    {
+        provider: "anthropic",
+        label: "Anthropic",
+        defaultModel: "claude-haiku-4-5-20251001",
+        alternatives: ["claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514"],
+        apiKeyRequired: true,
+        promotionCompatible: false,
+    },
+    {
+        provider: "gemini",
+        label: "Google Gemini",
+        defaultModel: "gemini-2.5-flash",
+        alternatives: ["gemini-2.5-flash-lite", "gemini-3-pro-preview"],
+        apiKeyRequired: true,
+        promotionCompatible: false,
+    },
+    {
+        provider: "groq",
+        label: "Groq",
+        defaultModel: "openai/gpt-oss-120b",
+        alternatives: ["openai/gpt-oss-20b"],
+        apiKeyRequired: true,
+        promotionCompatible: true,
+        defaultBaseUrl: "https://api.groq.com/openai/v1",
+    },
+    {
+        provider: "openrouter",
+        label: "OpenRouter",
+        defaultModel: "qwen/qwen3.5-9b",
+        alternatives: ["anthropic/claude-sonnet-4-20250514"],
+        apiKeyRequired: true,
+        promotionCompatible: true,
+        defaultBaseUrl: "https://openrouter.ai/api/v1",
+    },
+    {
+        provider: "ollama",
+        label: "Ollama (local)",
+        defaultModel: "gemma3:12b",
+        alternatives: ["gpt-oss:20b"],
+        apiKeyRequired: false,
+        promotionCompatible: true,
+        defaultBaseUrl: "http://localhost:11434/v1",
+    },
+    {
+        provider: "lmstudio",
+        label: "LM Studio (local)",
+        defaultModel: "local-model",
+        alternatives: [],
+        apiKeyRequired: false,
+        promotionCompatible: true,
+        defaultBaseUrl: "http://localhost:1234/v1",
+    },
+    {
+        provider: "openai-codex",
+        label: "OpenAI Codex subscription (personal local use)",
+        defaultModel: "gpt-5.4-mini",
+        alternatives: [],
+        apiKeyRequired: false,
+        promotionCompatible: false,
+    },
+    {
+        provider: "claude-code",
+        label: "Claude Code subscription (personal local use)",
+        defaultModel: "claude-sonnet-4-5-20250929",
+        alternatives: [],
+        apiKeyRequired: false,
+        promotionCompatible: false,
+    },
+];
+export function recommendationFor(provider) {
+    return HINDSIGHT_LLM_RECOMMENDATIONS.find((item) => item.provider === provider);
+}
+//# sourceMappingURL=llm-recommendations.js.map
