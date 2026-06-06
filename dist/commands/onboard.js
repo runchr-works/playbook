@@ -66,7 +66,15 @@ export async function onboardCommand() {
         }
         else {
             if (!(await commandExists("uvx"))) {
-                throw new Error("uvx is required. Install uv from https://docs.astral.sh/uv/");
+                throw new Error([
+                    "uvx is required to run Hindsight locally.",
+                    "",
+                    "Install uv, restart your shell, then run onboarding again:",
+                    "  Linux/macOS: curl -LsSf https://astral.sh/uv/install.sh | sh",
+                    "  Windows PowerShell: powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\"",
+                    "",
+                    "Official guide: https://docs.astral.sh/uv/getting-started/installation/",
+                ].join("\n"));
             }
             env.HINDSIGHT_BASE_URL = "http://localhost:8888";
             hindsightProvider = await chooseHindsightLlm(rl, maskedOutput, env);

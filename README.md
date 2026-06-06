@@ -20,6 +20,21 @@ It combines [Hindsight](https://github.com/vectorize-io/hindsight) and
 The onboarding command installs CodeGraph when needed and configures Hindsight. Supabase is configured as
 Hindsight's PostgreSQL database; Intentir never accesses Supabase directly.
 
+Install `uv` before selecting local pg0 or Supabase:
+
+```bash
+# Linux and macOS
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+```powershell
+# Windows PowerShell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Restart the shell after installation and verify it with `uvx --version`. Intentir does not install `uv`
+automatically.
+
 ## Quick Start
 
 Run the interactive onboarding:
