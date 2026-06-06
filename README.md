@@ -14,11 +14,26 @@ It combines [Hindsight](https://github.com/vectorize-io/hindsight) and
 
 ## Prerequisites
 
-- Node.js 22.5 or newer
-- [`uv`](https://docs.astral.sh/uv/) when Intentir should manage a local Hindsight process
+Install or prepare the following before running onboarding:
 
-The onboarding command installs CodeGraph when needed and configures Hindsight. Supabase is configured as
-Hindsight's PostgreSQL database; Intentir never accesses Supabase directly.
+| Requirement | When needed | Verify |
+| --- | --- | --- |
+| [Node.js](https://nodejs.org/) 22.5 or newer, including `npm` and `npx` | Always | `node --version && npm --version && npx --version` |
+| [Git](https://git-scm.com/) | Always; `npx github:...` and repository identity use it | `git --version` |
+| `curl` or Windows PowerShell | Installing `uv` with the commands below | `curl --version` or `$PSVersionTable` |
+| [`uv`](https://docs.astral.sh/uv/) and `uvx` | Local pg0 or Supabase; both run Hindsight locally | `uvx --version` |
+| Hindsight URL and optional API key | Only when connecting to an existing Hindsight server | `curl <url>/health` |
+| LLM provider credentials | Required by Hindsight unless using a supported subscription or local provider | Provider-specific |
+| Supabase PostgreSQL connection URLs and database password | Supabase storage only | Supabase Dashboard > **Connect** |
+| Ollama or LM Studio running locally | Only when selecting that local LLM provider | Provider-specific health check |
+| A supported MCP coding agent | To use Intentir tools from an agent | See [Supported Agent Clients](#supported-agent-clients) |
+| Outbound network access | Initial GitHub/npm/Python package downloads and hosted LLM or Supabase use | Check the relevant endpoints |
+
+CodeGraph does not need to be installed beforehand. Onboarding can install it globally with npm. If global
+npm installs require elevated permissions on your machine, configure a user-writable npm prefix or install
+`@colbymchenry/codegraph` yourself before onboarding.
+
+Supabase is configured as Hindsight's PostgreSQL database; Intentir never accesses Supabase directly.
 
 Install `uv` before selecting local pg0 or Supabase:
 
@@ -34,6 +49,20 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 
 Restart the shell after installation and verify it with `uvx --version`. Intentir does not install `uv`
 automatically.
+
+Verify the minimum local toolchain before continuing:
+
+```bash
+node --version
+npm --version
+npx --version
+git --version
+curl --version
+uvx --version
+```
+
+On Windows, verify PowerShell instead of `curl` when using the PowerShell installer. If you select an
+existing Hindsight server, `uvx` is not required.
 
 ## Quick Start
 
