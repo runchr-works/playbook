@@ -69,6 +69,17 @@ Install Intentir globally, verify the command, and run interactive onboarding:
 ```bash
 npm install --global --install-links=true github:runchr-works/intentir
 intentir --help
+```
+
+To try Intentir without installing it globally:
+
+```bash
+npx -y github:runchr-works/intentir
+```
+
+Now run interactive onboarding:
+
+```bash
 intentir onboard
 ```
 
@@ -77,6 +88,10 @@ It asks for:
 - Hindsight storage: embedded local pg0, Supabase PostgreSQL, or an existing server
 - Hindsight LLM provider, model, API key, and optional base URL
 - Whether CodeGraph should be installed globally
+
+> **⚠️ Important:** After onboarding, the local Hindsight process does not start
+> automatically on reboot. See [Hindsight Daemon](#hindsight-daemon) to configure
+> auto-start and keep the Hindsight server running.
 
 ### LLM Provider Recommendations
 
@@ -99,6 +114,10 @@ Model availability changes over time. These defaults follow the
 remains the source of truth for account access and pricing.
 
 ### Supabase Setup
+
+> This section is for users who choose Supabase as their Hindsight storage during
+> onboarding. If you selected embedded local pg0 or an existing Hindsight server,
+> skip to [initializing repositories](#repository-commands).
 
 Intentir and Hindsight do not need a Supabase API key. Do not provide an `anon`, `service_role`,
 `sb_publishable`, `sb_secret`, legacy JWT key, or Personal Access Token.
@@ -137,9 +156,10 @@ locally on each computer.
 
 `intentir init` also creates `.mcp.json` in the project root (or merges the `intentir` entry into an
 existing file). Pi, Claude Code, Cursor, and other agents that read `.mcp.json` discover Intentir
-automatically after init.
+automatically after init — no further configuration is needed.
 
-Add Intentir to your MCP client — either tell your agent to do it, or create a config file:
+For agents that use a different MCP config file, or if you prefer manual setup, add Intentir
+as an MCP server with command `intentir`:
 
 ```text
 # Tell any supported agent:
@@ -180,12 +200,6 @@ Find the authentication flow using project memory and the code graph.
 
 # Health check → intentir_health
 Check Intentir health.
-```
-
-To try Intentir without installing it globally:
-
-```bash
-npx -y github:runchr-works/intentir
 ```
 
 ## Repository Commands
