@@ -135,20 +135,27 @@ The bank ID is the shared Hindsight memory boundary. Agents and computers using 
 backend and bank ID share project memory. Different bank IDs remain isolated. CodeGraph is still indexed
 locally on each computer.
 
-Add Intentir to your MCP client:
+Add Intentir to your MCP client — either tell your agent to do it, or create a config file:
+
+```text
+# Tell any supported agent:
+Add Intentir as an MCP server with command "intentir".
+```
+
+The agent creates the appropriate config. Or do it yourself:
 
 ```json
 {
   "mcpServers": {
     "intentir": {
-      "command": "intentir",
-      "env": {
-        "INTENTIR_REPOSITORY_ROOT": "/absolute/path/to/portal-api"
-      }
+      "command": "intentir"
     }
   }
 }
 ```
+
+`INTENTIR_REPOSITORY_ROOT` defaults to the agent's working directory and is not needed
+when the agent starts in the repository root.
 
 Restart the MCP client. Your agent discovers Intentir's tools and maps natural language
 to the right MCP tool automatically. Try these in your agent:
@@ -417,22 +424,27 @@ intentir agents config pi --root /path/to/repo
 ### Pi Setup
 
 Pi uses [pi-mcp-adapter](https://github.com/nicopreme/pi-mcp-adapter) to bridge stdio MCP servers.
-Install it once, then add Intentir through the adapter's standard `.mcp.json` file:
+Install it from within Pi:
 
-```bash
+```text
+# Tell Pi (this runs inside Pi, not in a regular terminal):
 pi install npm:pi-mcp-adapter
 ```
 
-Create `.mcp.json` in your project root:
+Then tell Pi to add Intentir:
+
+```text
+# Tell Pi:
+Add Intentir as an MCP server with command "intentir". Save it as project .mcp.json.
+```
+
+Pi creates `.mcp.json` in the project root. Or create it yourself:
 
 ```json
 {
   "mcpServers": {
     "intentir": {
-      "command": "intentir",
-      "env": {
-        "INTENTIR_REPOSITORY_ROOT": "/absolute/path/to/portal-api"
-      }
+      "command": "intentir"
     }
   }
 }

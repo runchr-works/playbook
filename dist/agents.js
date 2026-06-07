@@ -114,21 +114,14 @@ export function findAgent(value) {
     const normalized = value.toLowerCase();
     return AGENTS.find((agent) => agent.id === normalized || agent.aliases.includes(normalized));
 }
-export function agentConfig(agent, repositoryRoot) {
-    const env = {
-        INTENTIR_REPOSITORY_ROOT: repositoryRoot,
-    };
+export function agentConfig(agent, _repositoryRoot) {
     const stdio = {
         command: "intentir",
-        env,
     };
     if (agent.id === "codex") {
         return [
             "[mcp_servers.intentir]",
             'command = "intentir"',
-            "",
-            "[mcp_servers.intentir.env]",
-            `INTENTIR_REPOSITORY_ROOT = ${JSON.stringify(repositoryRoot)}`,
         ].join("\n");
     }
     if (agent.id === "opencode") {
@@ -139,7 +132,6 @@ export function agentConfig(agent, repositoryRoot) {
                     type: "local",
                     command: ["intentir"],
                     enabled: true,
-                    environment: env,
                 },
             },
         }, null, 2);
@@ -148,13 +140,7 @@ export function agentConfig(agent, repositoryRoot) {
         return JSON.stringify({ mcpServers: { intentir: stdio } }, null, 2);
     }
     if (agent.id === "pi") {
-        return [
-            "# Install the adapter:",
-            "#   pi install npm:pi-mcp-adapter",
-            "#",
-            "# Then save as project .mcp.json:",
-            JSON.stringify({ mcpServers: { intentir: stdio } }, null, 2),
-        ].join("\n");
+        return JSON.stringify({ mcpServers: { intentir: stdio } }, null, 2);
     }
     return JSON.stringify({ mcpServers: { intentir: stdio } }, null, 2);
 }

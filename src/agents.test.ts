@@ -8,11 +8,19 @@ describe("agent integrations", () => {
     expect(findAgent("deepseek-reasonix")?.name).toBe("Reasonix");
   });
 
-  it("generates repository-aware configs", () => {
+  it("generates clean stdio MCP configs without env", () => {
     const codex = findAgent("codex");
     expect(codex).toBeDefined();
     const config = agentConfig(codex!, "/repo");
-    expect(config).toContain('INTENTIR_REPOSITORY_ROOT = "/repo"');
+    expect(config).toContain('command = "intentir"');
+    expect(config).not.toContain('INTENTIR_REPOSITORY_ROOT');
+
+    const pi = findAgent("pi");
+    expect(pi).toBeDefined();
+    const piConfig = agentConfig(pi!, "/repo");
+    const parsed = JSON.parse(piConfig);
+    expect(parsed.mcpServers.intentir.command).toBe("intentir");
+    expect(parsed.mcpServers.intentir.env).toBeUndefined();
   });
 
   it("uses unique canonical identifiers", () => {
