@@ -12,7 +12,7 @@ import {
 const directories: string[] = [];
 
 function repository(): string {
-  const root = mkdtempSync(path.join(tmpdir(), "agent-hub-workspace-"));
+  const root = mkdtempSync(path.join(tmpdir(), "memkit-workspace-"));
   directories.push(root);
   return root;
 }
@@ -22,14 +22,14 @@ afterEach(() => {
 });
 
 describe("workspace state", () => {
-  it("requires both agent-hub config and CodeGraph database", () => {
+  it("requires both memkit config and CodeGraph database", () => {
     const root = repository();
     writeWorkspaceConfig(root, {
       bankId: "project",
     });
     expect(workspaceState(root)).toMatchObject({
       initialized: false,
-      agentHubInitialized: true,
+      memkitInitialized: true,
       codegraphInitialized: false,
       reasons: ["missing .codegraph/codegraph.db"],
     });
@@ -39,7 +39,7 @@ describe("workspace state", () => {
     expect(workspaceState(root).initialized).toBe(true);
   });
 
-  it("removes agent-hub state and preserves graph by default", () => {
+  it("removes memkit state and preserves graph by default", () => {
     const root = repository();
     writeWorkspaceConfig(root, {
       bankId: "project",
@@ -49,7 +49,7 @@ describe("workspace state", () => {
 
     removeWorkspaceState(root, false);
 
-    expect(workspaceState(root).reasons).toContain("missing .agent-hub/config.json");
+    expect(workspaceState(root).reasons).toContain("missing .memkit/config.json");
     expect(workspaceState(root).reasons).not.toContain("missing .codegraph/codegraph.db");
   });
 

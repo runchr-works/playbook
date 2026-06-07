@@ -6,7 +6,7 @@ export interface WorkspaceConfig {
 export interface WorkspaceState {
     initialized: boolean;
     intentirInitialized: boolean;
-    agentHubInitialized: boolean;
+    memkitInitialized: boolean;
     codegraphInitialized: boolean;
     repositoryRoot: string;
     configPath: string;

@@ -140,7 +140,7 @@ export function agentConfig(
   const config = {
     mcpServers: connections,
     _repositoryRoot: repositoryRoot,
-    _note: "Generate this with `agent-hub init --bank <bank-id>`",
+    _note: "Generate this with `memkit init --bank <bank-id>`",
   };
 
   return JSON.stringify(config, null, 2);

@@ -1,17 +1,17 @@
 {
-  "name": "agent-hub",
+  "name": "memkit",
   "version": "0.1.0",
   "description": "One-stop setup CLI for MCP-powered coding agent tools",
   "type": "module",
   "bin": {
-    "agent-hub": "./dist/cli.js"
+    "memkit": "./dist/cli.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/runchr-works/playbook.git",
-    "directory": "agent-hub"
+    "directory": "memkit"
   },
-  "homepage": "https://github.com/runchr-works/playbook/tree/main/agent-hub#readme",
+  "homepage": "https://github.com/runchr-works/playbook/tree/main/memkit#readme",
   "exports": {
     ".": "./dist/index.js"
   },

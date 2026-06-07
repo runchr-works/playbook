@@ -12,17 +12,17 @@ export interface UserConfig {
   updatedAt: string;
 }
 
-export function agentHubHome(env: NodeJS.ProcessEnv = process.env): string {
+export function memkitHome(env: NodeJS.ProcessEnv = process.env): string {
   return path.resolve(
-    env.AGENT_HUB_HOME ??
+    env.MEMKIT_HOME ??
       (env.XDG_CONFIG_HOME
-        ? path.join(env.XDG_CONFIG_HOME, "agent-hub")
-        : path.join(os.homedir(), ".config", "agent-hub")),
+        ? path.join(env.XDG_CONFIG_HOME, "memkit")
+        : path.join(os.homedir(), ".config", "memkit")),
   );
 }
 
 export function userConfigPath(env: NodeJS.ProcessEnv = process.env): string {
-  return path.join(agentHubHome(env), "config.json");
+  return path.join(memkitHome(env), "config.json");
 }
 
 export function loadUserConfig(env: NodeJS.ProcessEnv = process.env): UserConfig | undefined {
@@ -38,5 +38,5 @@ export function saveUserConfig(config: UserConfig, env: NodeJS.ProcessEnv = proc
 }
 
 export function removeUserConfig(env: NodeJS.ProcessEnv = process.env): void {
-  rmSync(agentHubHome(env), { recursive: true, force: true });
+  rmSync(memkitHome(env), { recursive: true, force: true });
 }

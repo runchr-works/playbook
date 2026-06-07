@@ -9,7 +9,7 @@ import { writeWorkspaceConfig } from "./workspace.js";
 const directories: string[] = [];
 
 function temporaryDirectory(): string {
-  const directory = mkdtempSync(path.join(tmpdir(), "agent-hub-config-"));
+  const directory = mkdtempSync(path.join(tmpdir(), "memkit-config-"));
   directories.push(directory);
   return directory;
 }
@@ -30,7 +30,7 @@ describe("loadConfig", () => {
       },
       createdAt: "2026-06-07T00:00:00.000Z",
       updatedAt: "2026-06-07T00:00:00.000Z",
-    }, { AGENT_HUB_HOME: home });
+    }, { MEMKIT_HOME: home });
     writeWorkspaceConfig(repositoryRoot, {
       bankId: "project-bank",
     });
@@ -38,8 +38,8 @@ describe("loadConfig", () => {
     writeFileSync(path.join(repositoryRoot, ".codegraph", "codegraph.db"), "");
 
     const config = loadConfig({
-      AGENT_HUB_HOME: home,
-      AGENT_HUB_REPOSITORY_ROOT: repositoryRoot,
+      MEMKIT_HOME: home,
+      MEMKIT_REPOSITORY_ROOT: repositoryRoot,
     });
 
     expect(config.identity).toEqual({
@@ -53,9 +53,9 @@ describe("loadConfig", () => {
     const home = temporaryDirectory();
     const repositoryRoot = temporaryDirectory();
     expect(() => loadConfig({
-      AGENT_HUB_HOME: home,
-      AGENT_HUB_REPOSITORY_ROOT: repositoryRoot,
-    })).toThrow("agent-hub init --bank <bank-id>");
+      MEMKIT_HOME: home,
+      MEMKIT_REPOSITORY_ROOT: repositoryRoot,
+    })).toThrow("memkit init --bank <bank-id>");
   });
 
   it("allows Hindsight identity when CodeGraph initialization is incomplete", () => {
@@ -65,12 +65,12 @@ describe("loadConfig", () => {
       bankId: "shared-bank",
     });
     const config = loadConfig({
-      AGENT_HUB_HOME: home,
-      AGENT_HUB_REPOSITORY_ROOT: repositoryRoot,
+      MEMKIT_HOME: home,
+      MEMKIT_REPOSITORY_ROOT: repositoryRoot,
     });
 
     expect(config.identity.bankId).toBe("shared-bank");
-    expect(config.workspace.agentHubInitialized).toBe(true);
+    expect(config.workspace.memkitInitialized).toBe(true);
     expect(config.workspace.codegraphInitialized).toBe(false);
   });
 });

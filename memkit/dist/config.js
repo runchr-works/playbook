@@ -4,11 +4,11 @@ import { workspaceState } from "./workspace.js";
 export function loadConfig(env = process.env) {
     const userConfig = loadUserConfig(env);
     const mergedEnv = { ...userConfig?.env, ...env };
-    const repositoryRoot = path.resolve(mergedEnv.AGENT_HUB_REPOSITORY_ROOT ?? process.cwd());
+    const repositoryRoot = path.resolve(mergedEnv.MEMKIT_REPOSITORY_ROOT ?? process.cwd());
     const workspace = workspaceState(repositoryRoot);
     const workspaceIdentity = workspace.config;
-    if (!workspace.agentHubInitialized || !workspaceIdentity) {
-        throw new Error(`agent-hub repository is not initialized. Run \`agent-hub init --bank <bank-id>\` in ${repositoryRoot}.`);
+    if (!workspace.memkitInitialized || !workspaceIdentity) {
+        throw new Error(`memkit repository is not initialized. Run \`memkit init --bank <bank-id>\` in ${repositoryRoot}.`);
     }
     return {
         identity: {

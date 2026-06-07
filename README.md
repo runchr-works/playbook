@@ -6,7 +6,7 @@
 
 | Package | Description |
 |---------|-------------|
-| [agent-hub](./agent-hub) | One-step setup for coding agent MCP tools |
+| [memkit](./memkit) | One-step setup for coding agent MCP tools |
 
 ## Philosophy
 
@@ -22,7 +22,7 @@ session tracking. No thin proxies, no filtered features.
 
 ```bash
 git clone https://github.com/runchr-works/playbook.git
-cd playbook/agent-hub
+cd playbook/memkit
 npm install
 npm run check
 npm test

@@ -1,8 +1,8 @@
-# agent-hub
+# memkit
 
 One-step setup CLI for MCP-powered coding agent tools.
 
-`agent-hub` installs and configures three tools for your coding agent — no thin proxy,
+`memkit` installs and configures three tools for your coding agent — no thin proxy,
 no filtered features. Your agent connects directly to each tool's full MCP interface.
 
 ## What it sets up
@@ -20,14 +20,14 @@ no filtered features. Your agent connects directly to each tool's full MCP inter
 npm install -g github:runchr-works/playbook
 
 # Run onboarding (installs all three tools)
-agent-hub onboard
+memkit onboard
 
 # Initialize a repository
 cd /path/to/project
-agent-hub init --bank <bank-id>
+memkit init --bank <bank-id>
 
 # Verify everything
-agent-hub doctor
+memkit doctor
 ```
 
 After `init`, your project's `.mcp.json` is ready. Restart your agent.
@@ -36,22 +36,22 @@ After `init`, your project's `.mcp.json` is ready. Restart your agent.
 
 | Command | Purpose |
 |---------|---------|
-| `agent-hub onboard` | Install and configure Hindsight, CodeGraph, context-mode |
-| `agent-hub init [path] --bank <bank-id>` | Initialize repository memory and CodeGraph |
-| `agent-hub doctor [--json]` | Check all tools are installed and connected |
-| `agent-hub workspace status` | Show workspace and CodeGraph index status |
-| `agent-hub workspace sync` | Sync the CodeGraph index |
-| `agent-hub workspace remove [--purge-graph]` | Remove workspace state |
-| `agent-hub agents list` | List supported agent clients |
-| `agent-hub agents config <agent>` | Print MCP config for a specific agent |
-| `agent-hub uninstall [--purge]` | Remove global configuration |
+| `memkit onboard` | Install and configure Hindsight, CodeGraph, context-mode |
+| `memkit init [path] --bank <bank-id>` | Initialize repository memory and CodeGraph |
+| `memkit doctor [--json]` | Check all tools are installed and connected |
+| `memkit workspace status` | Show workspace and CodeGraph index status |
+| `memkit workspace sync` | Sync the CodeGraph index |
+| `memkit workspace remove [--purge-graph]` | Remove workspace state |
+| `memkit agents list` | List supported agent clients |
+| `memkit agents config <agent>` | Print MCP config for a specific agent |
+| `memkit uninstall [--purge]` | Remove global configuration |
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `AGENT_HUB_REPOSITORY_ROOT` | cwd | Repository root |
-| `AGENT_HUB_HOME` | `~/.config/agent-hub` | Config directory |
+| `MEMKIT_REPOSITORY_ROOT` | cwd | Repository root |
+| `MEMKIT_HOME` | `~/.config/memkit` | Config directory |
 | `HINDSIGHT_BASE_URL` | `http://localhost:8888` | Hindsight API URL |
 | `CODEGRAPH_COMMAND` | `codegraph` | CodeGraph executable |
 | `CODEGRAPH_ARGS` | `serve,--mcp` | CodeGraph arguments |
@@ -62,7 +62,7 @@ After `init`, your project's `.mcp.json` is ready. Restart your agent.
    It asks for Hindsight's LLM provider and storage backend, then starts Hindsight
    and generates `.mcp.json` in your project.
 
-2. Your agent connects directly to each tool. No agent-hub runtime, no filtered
+2. Your agent connects directly to each tool. No memkit runtime, no filtered
    tool list — you get all 29 Hindsight tools, full CodeGraph power, and
    context-mode session tracking.
 

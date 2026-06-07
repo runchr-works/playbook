@@ -1,5 +1,5 @@
 import { type WorkspaceState } from "./workspace.js";
-export interface AgentHubConfig {
+export interface MemkitConfig {
     identity: {
         bankId: string;
     };
@@ -17,4 +17,4 @@ export interface AgentHubConfig {
         timeoutMs: number;
     };
 }
-export declare function loadConfig(env?: NodeJS.ProcessEnv): AgentHubConfig;
+export declare function loadConfig(env?: NodeJS.ProcessEnv): MemkitConfig;

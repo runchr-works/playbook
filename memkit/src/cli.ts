@@ -6,7 +6,7 @@ import { workspaceCommand } from "./commands/workspace.js";
 import { agentsCommand } from "./commands/agents.js";
 
 function debug(message: string): void {
-  if (process.env.AGENT_HUB_DEBUG === "true") console.error(`agent-hub: ${message}`);
+  if (process.env.MEMKIT_DEBUG === "true") console.error(`memkit: ${message}`);
 }
 
 async function main(): Promise<void> {
@@ -22,7 +22,7 @@ async function main(): Promise<void> {
   }
   if (command === "workspace") {
     if (action === "init") {
-      throw new Error("Use `agent-hub init [path] --bank <bank-id>` to initialize a repository.");
+      throw new Error("Use `memkit init [path] --bank <bank-id>` to initialize a repository.");
     }
     await workspaceCommand(action, args);
     return;
@@ -44,30 +44,30 @@ async function main(): Promise<void> {
     return;
   }
   if (!command || command === "serve" || command === "--mcp") {
-    console.error("agent-hub is a setup CLI, not an MCP server.");
-    console.error("Run `agent-hub onboard` to install and configure your MCP tools.");
+    console.error("memkit is a setup CLI, not an MCP server.");
+    console.error("Run `memkit onboard` to install and configure your MCP tools.");
     console.error("Then your agent connects directly to Hindsight, CodeGraph, and context-mode.");
-    console.error("See `agent-hub help` for all commands.");
+    console.error("See `memkit help` for all commands.");
     process.exitCode = 1;
     return;
   }
-  throw new Error(`Unknown command: ${command}. Run \`agent-hub help\`.`);
+  throw new Error(`Unknown command: ${command}. Run \`memkit help\`.`);
 }
 
 function printHelp(): void {
-  console.log(`agent-hub
+  console.log(`memkit
 
 Usage:
-  agent-hub onboard                Install and configure MCP tools for your agent
-  agent-hub init [path] --bank <bank-id>
+  memkit onboard                Install and configure MCP tools for your agent
+  memkit init [path] --bank <bank-id>
                                     Initialize repository memory and CodeGraph
-  agent-hub workspace status        Show workspace and CodeGraph status
-  agent-hub workspace sync          Sync the CodeGraph index
-  agent-hub workspace remove        Remove agent-hub workspace state
-  agent-hub agents list             List supported agent clients
-  agent-hub agents config <agent>   Print an MCP configuration for an agent
-  agent-hub doctor [--json]         Diagnose the installation and current workspace
-  agent-hub uninstall [--purge]     Remove global agent-hub configuration
+  memkit workspace status        Show workspace and CodeGraph status
+  memkit workspace sync          Sync the CodeGraph index
+  memkit workspace remove        Remove memkit workspace state
+  memkit agents list             List supported agent clients
+  memkit agents config <agent>   Print an MCP configuration for an agent
+  memkit doctor [--json]         Diagnose the installation and current workspace
+  memkit uninstall [--purge]     Remove global memkit configuration
 `);
 }
 

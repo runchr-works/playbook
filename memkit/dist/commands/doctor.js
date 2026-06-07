@@ -42,7 +42,7 @@ export async function doctorCommand(json = false) {
         console.log(`- uvx: ${uvx ? "available" : "missing"}`);
         console.log(`- CodeGraph: ${codegraph ? "available" : "missing"}`);
         console.log(`- context-mode: ${contextMode ? "available" : "missing"}`);
-        console.log(`- repository: ${workspace.agentHubInitialized ? "initialized" : "run agent-hub init --bank <bank-id>"}`);
+        console.log(`- repository: ${workspace.memkitInitialized ? "initialized" : "run memkit init --bank <bank-id>"}`);
         console.log(`- CodeGraph index: ${workspace.codegraphInitialized ? "initialized" : "missing"}`);
         if (report.mcpJson) {
             console.log("\nMCP connections (.mcp.json):");

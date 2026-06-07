@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
-export const WORKSPACE_CONFIG_RELATIVE_PATH = path.join(".agent-hub", "config.json");
+export const WORKSPACE_CONFIG_RELATIVE_PATH = path.join(".memkit", "config.json");
 export const CODEGRAPH_DATABASE_RELATIVE_PATH = path.join(".codegraph", "codegraph.db");
 export function workspaceState(repositoryRoot) {
     const root = path.resolve(repositoryRoot);
@@ -9,24 +9,24 @@ export function workspaceState(repositoryRoot) {
     const reasons = [];
     let config;
     if (!existsSync(configPath)) {
-        reasons.push("missing .agent-hub/config.json");
+        reasons.push("missing .memkit/config.json");
     }
     else {
         try {
             const parsed = JSON.parse(readFileSync(configPath, "utf8"));
             if (!parsed.bankId) {
-                reasons.push("invalid .agent-hub/config.json");
+                reasons.push("invalid .memkit/config.json");
             }
             else {
                 config = parsed;
             }
         }
         catch {
-            reasons.push("invalid .agent-hub/config.json");
+            reasons.push("invalid .memkit/config.json");
         }
     }
     const intentirInitialized = Boolean(config) && reasons.length === 0;
-    const agentHubInitialized = intentirInitialized;
+    const memkitInitialized = intentirInitialized;
     const codegraphInitialized = existsSync(codegraphDatabasePath);
     if (!codegraphInitialized) {
         reasons.push("missing .codegraph/codegraph.db");
@@ -34,7 +34,7 @@ export function workspaceState(repositoryRoot) {
     return {
         initialized: intentirInitialized && codegraphInitialized,
         intentirInitialized,
-        agentHubInitialized,
+        memkitInitialized,
         codegraphInitialized,
         repositoryRoot: root,
         configPath,
@@ -54,7 +54,7 @@ export function writeWorkspaceConfig(repositoryRoot, input) {
     return config;
 }
 export const MCP_JSON_RELATIVE_PATH = ".mcp.json";
-const MCP_SERVER_NAME = "agent-hub";
+const MCP_SERVER_NAME = "memkit";
 const MCP_HINDSIGHT_NAME = "hindsight";
 const MCP_CODEGRAPH_NAME = "codegraph";
 const MCP_CONTEXT_MODE_NAME = "context-mode";
@@ -76,7 +76,7 @@ export function writeMcpJson(repositoryRoot, bankId, hindsightBaseUrl) {
     if (!doc) {
         doc = { mcpServers: {} };
     }
-    // Direct connections to each tool — no agent-hub proxy
+    // Direct connections to each tool — no memkit proxy
     if (hindsightBaseUrl) {
         doc.mcpServers[MCP_HINDSIGHT_NAME] = {
             url: `${hindsightBaseUrl.replace(/\/$/, "")}/mcp/${encodeURIComponent(bankId)}/`,
@@ -89,7 +89,7 @@ export function writeMcpJson(repositoryRoot, bankId, hindsightBaseUrl) {
 }
 export function removeWorkspaceState(repositoryRoot, purgeGraph) {
     const root = path.resolve(repositoryRoot);
-    rmSync(path.join(root, ".agent-hub"), { recursive: true, force: true });
+    rmSync(path.join(root, ".memkit"), { recursive: true, force: true });
     if (purgeGraph)
         rmSync(path.join(root, ".codegraph"), { recursive: true, force: true });
 }

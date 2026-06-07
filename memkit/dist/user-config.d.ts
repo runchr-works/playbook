@@ -6,7 +6,7 @@ export interface UserConfig {
     createdAt: string;
     updatedAt: string;
 }
-export declare function agentHubHome(env?: NodeJS.ProcessEnv): string;
+export declare function memkitHome(env?: NodeJS.ProcessEnv): string;
 export declare function userConfigPath(env?: NodeJS.ProcessEnv): string;
 export declare function loadUserConfig(env?: NodeJS.ProcessEnv): UserConfig | undefined;
 export declare function saveUserConfig(config: UserConfig, env?: NodeJS.ProcessEnv): void;
