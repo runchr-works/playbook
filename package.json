@@ -5,6 +5,11 @@
   "bin": {
     "memkit": "./memkit/dist/cli.js"
   },
+  "files": [
+    "memkit/dist",
+    "memkit/package.json",
+    "memkit/.env.example"
+  ],
   "workspaces": [
     "memkit"
   ]
