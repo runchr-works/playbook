@@ -285,11 +285,28 @@ Check Intentir health.
 
 ### Context-Mode Setup
 
-context-mode captures session decisions, conventions, and error fixes as you work
-with your agent. `memory_sweep` then promotes those insights to shared Hindsight
-memory — letting all agents learn from every session.
+context-mode captures session events automatically as you work with your agent. It
+tracks decisions you make, conventions you establish, errors you encounter and fix,
+approach changes, and other meaningful moments in the conversation — all stored in
+a local per-session SQLite database.
 
-context-mode is optional. Intentir works without it.
+Key event types that context-mode captures:
+
+| Event type | Description |
+| --- | --- |
+| **Decisions** | Choices that affect project direction — architecture picks, library selections, naming conventions |
+| **Conventions** | Repeated patterns and rules — code style, testing practices, error handling idioms |
+| **Error fixes** | Bugs encountered and their solutions — root cause, fix applied, validation |
+| **User prompts** | Instructions and corrections the user provides — captured for later recall and sweep |
+| **Approach changes** | Mid-session direction shifts — abandoned paths and why they were rejected |
+
+context-mode runs silently in the background. You don't call it directly — it just records.
+`memory_sweep` then reads those local session databases and promotes meaningful insights to
+shared Hindsight memory, turning per-agent session events into project knowledge that every
+agent can access.
+
+context-mode is optional. Intentir works without it, but without context-mode there is
+nothing for `memory_sweep` to sweep.
 
 #### Install
 
@@ -308,6 +325,7 @@ context-mode runs as a global MCP server — configure it once per agent.
 **Option A: Automatic (during `intentir onboard`)**
 
 Onboarding detects existing agent MCP configs and adds context-mode automatically.
+Codex CLI and OpenCode work immediately — no extra steps needed.
 Pi and Claude Code require one extra step:
 
 ```text
@@ -359,6 +377,109 @@ context-mode is running as an MCP server for your agent and you've had at least
 one conversation with the agent since configuring it.
 
 Full docs: [context-mode](https://github.com/mksglu/context-mode)
+
+#### Memory Sweep
+
+`memory_sweep` is a **manual tool** — it does not run automatically. You decide when to
+promote session insights to shared project memory.
+
+context-mode records everything automatically in the background, session by session.
+`memory_sweep` is the review step: it reads those recorded sessions and promotes
+meaningful insights to Hindsight shared memory, where every agent can access them.
+
+---
+
+**Use cases: when and how to run `memory_sweep`**
+
+##### 1. After finishing a feature or bug fix
+
+You just completed a significant piece of work. During the session, you made decisions
+about architecture, picked libraries, established patterns, and resolved errors.
+
+```text
+# Tell your agent (after completing the work):
+Sweep context-mode sessions and promote findings to project memory.
+```
+
+Expected outcome: decisions, conventions, and error fixes from that session are promoted
+to Hindsight. Next time any agent works on a similar feature, it recalls those patterns
+without you repeating them.
+
+##### 2. When you keep repeating the same instructions
+
+You find yourself saying the same thing across sessions: "remember we use feature flags",
+"migrations must be backward compatible", "always add tests for new endpoints".
+
+Sweep after a session where you gave those instructions. The conventions get promoted
+and future agents recall them automatically via `memory_recall` or `intent_context`.
+
+##### 3. Periodic maintenance (daily or weekly)
+
+Make sweeping a habit. At the end of the day or week, run a sweep to consolidate
+what every session learned:
+
+```text
+Sweep context-mode sessions and promote findings to project memory.
+```
+
+If `retained: []` — that's fine. It just means nothing new to promote. Try again
+next time.
+
+##### 4. Before onboarding a new team member
+
+A new developer is about to join the project. Run a sweep to make sure all the
+accumulated conventions, gotchas, and patterns are in shared memory before they
+start their first session:
+
+```text
+Sweep context-mode sessions and promote all findings to project memory.
+```
+
+Then tell the new member: "use `memory_recall` to search for project conventions"
+and their agent will already know how the team works.
+
+##### 5. After resolving a tricky error
+
+You spent an hour debugging an elusive issue. The fix, the root cause, and the
+debugging approach are all captured by context-mode. Sweep to make sure no other
+agent has to repeat that investigation:
+
+```text
+Sweep context-mode sessions — I just fixed a tricky bug and want the solution remembered.
+```
+
+---
+
+**Understanding sweep results:**
+
+```
+detected: true | false          # Whether context-mode sessions were found
+sessionCount: N                 # Number of sessions scanned
+retained: [...]                 # Insights that were promoted to Hindsight
+summary: "..."                  # Human-readable summary of what happened
+```
+
+A result with `retained: []` (zero promotions) is normal when:
+- context-mode was just installed and has little session history
+- The sessions didn't contain decisions, conventions, or error fixes to promote
+- You recently ran a sweep — duplicate insights are not promoted again
+
+Zero promotions do **not** indicate a problem. Continue working normally and run
+another sweep after a few more sessions.
+
+---
+
+**Automating sweeps (optional):**
+
+If you prefer automatic sweeps, schedule them via cron or systemd timer:
+
+```bash
+# Daily at noon via cron:
+0 12 * * * cd /path/to/project && intentir daemon run --sweep-only 2>&1
+```
+
+The recommended approach is manual sweeps triggered naturally after meaningful work
+sessions — this gives you control over what gets promoted to shared memory.
 
 ## Repository Commands
 
@@ -556,7 +677,7 @@ These fields reflect metadata returned by Hindsight.
 | `memory_retain` | Store memory in the configured Hindsight bank |
 | `memory_review` | List retained sources and original content |
 | `memory_forget` | Delete a source and its extracted memory units |
-| `memory_sweep` | Scan context-mode sessions and promote insights to Hindsight memory |
+| `memory_sweep` | Scan context-mode session databases and promote decisions, conventions, and error fixes to shared Hindsight memory. Manual tool — run after sessions when you want insights promoted. |
 | `code_search` | Search local indexed symbols |
 | `code_callers` | Find callers of a symbol |
 | `code_callees` | Find callees of a symbol |
