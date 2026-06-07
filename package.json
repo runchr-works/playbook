@@ -3,13 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "bin": {
-    "memkit": "./memkit/dist/cli.js"
+    "memkit": "./cli.js"
   },
-  "files": [
-    "memkit/dist",
-    "memkit/package.json",
-    "memkit/.env.example"
-  ],
   "workspaces": [
     "memkit"
   ]
