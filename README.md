@@ -135,6 +135,10 @@ The bank ID is the shared Hindsight memory boundary. Agents and computers using 
 backend and bank ID share project memory. Different bank IDs remain isolated. CodeGraph is still indexed
 locally on each computer.
 
+`intentir init` also creates `.mcp.json` in the project root (or merges the `intentir` entry into an
+existing file). Pi, Claude Code, Cursor, and other agents that read `.mcp.json` discover Intentir
+automatically after init.
+
 Add Intentir to your MCP client — either tell your agent to do it, or create a config file:
 
 ```text
@@ -187,8 +191,8 @@ npx -y github:runchr-works/intentir
 ## Repository Commands
 
 Hindsight is configured once during onboarding. Each repository must then be initialized with an explicit
-bank ID. The command stores the bank ID in `.intentir/config.json` and initializes the local CodeGraph
-index:
+bank ID. The command stores the bank ID in `.intentir/config.json`, creates (or merges into) `.mcp.json`,
+and initializes the local CodeGraph index:
 
 ```bash
 intentir init [path] --bank <bank-id>
@@ -431,14 +435,15 @@ Install it from within Pi:
 pi install npm:pi-mcp-adapter
 ```
 
-Then tell Pi to add Intentir:
+After running `intentir init --bank <bank-id>`, `.mcp.json` is already in the project root.
+If you haven't run init yet, tell Pi to create the config:
 
 ```text
 # Tell Pi:
 Add Intentir as an MCP server with command "intentir". Save it as project .mcp.json.
 ```
 
-Pi creates `.mcp.json` in the project root. Or create it yourself:
+A working `.mcp.json` looks like:
 
 ```json
 {

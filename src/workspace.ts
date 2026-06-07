@@ -72,6 +72,36 @@ export function writeWorkspaceConfig(
   return config;
 }
 
+export const MCP_JSON_RELATIVE_PATH = ".mcp.json";
+
+export interface McpJson {
+  mcpServers: Record<string, { command: string; args?: string[]; env?: Record<string, string> }>;
+}
+
+const MCP_SERVER_NAME = "intentir";
+
+function readMcpJson(repositoryRoot: string): McpJson | null {
+  const filePath = path.join(repositoryRoot, MCP_JSON_RELATIVE_PATH);
+  if (!existsSync(filePath)) return null;
+  try {
+    return JSON.parse(readFileSync(filePath, "utf8")) as McpJson;
+  } catch {
+    return null;
+  }
+}
+
+export function writeMcpJson(repositoryRoot: string): McpJson {
+  const root = path.resolve(repositoryRoot);
+  const filePath = path.join(root, MCP_JSON_RELATIVE_PATH);
+  let doc = readMcpJson(root);
+  if (!doc) {
+    doc = { mcpServers: {} };
+  }
+  doc.mcpServers[MCP_SERVER_NAME] = { command: "intentir" };
+  writeFileSync(filePath, `${JSON.stringify(doc, null, 2)}\n`);
+  return doc;
+}
+
 export function removeWorkspaceState(repositoryRoot: string, purgeGraph: boolean): void {
   const root = path.resolve(repositoryRoot);
   rmSync(path.join(root, ".intentir"), { recursive: true, force: true });

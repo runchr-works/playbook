@@ -1,10 +1,11 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   removeWorkspaceState,
   workspaceState,
+  writeMcpJson,
   writeWorkspaceConfig,
 } from "./workspace.js";
 
@@ -50,6 +51,34 @@ describe("workspace state", () => {
 
     expect(workspaceState(root).reasons).toContain("missing .intentir/config.json");
     expect(workspaceState(root).reasons).not.toContain("missing .codegraph/codegraph.db");
+  });
+
+  it("creates .mcp.json when it does not exist", () => {
+    const root = repository();
+    const result = writeMcpJson(root);
+    expect(result.mcpServers.intentir).toEqual({ command: "intentir" });
+    expect(readFileSync(path.join(root, ".mcp.json"), "utf8")).toContain('"command": "intentir"');
+  });
+
+  it("merges intentir into existing .mcp.json without removing other servers", () => {
+    const root = repository();
+    writeFileSync(
+      path.join(root, ".mcp.json"),
+      JSON.stringify({ mcpServers: { existing: { command: "other-tool" } } }, null, 2),
+    );
+    const result = writeMcpJson(root);
+    expect(result.mcpServers.intentir).toEqual({ command: "intentir" });
+    expect(result.mcpServers.existing).toEqual({ command: "other-tool" });
+  });
+
+  it("overwrites existing intentir entry on re-init", () => {
+    const root = repository();
+    writeFileSync(
+      path.join(root, ".mcp.json"),
+      JSON.stringify({ mcpServers: { intentir: { command: "old" } } }, null, 2),
+    );
+    const result = writeMcpJson(root);
+    expect(result.mcpServers.intentir).toEqual({ command: "intentir" });
   });
 
 });

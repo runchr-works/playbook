@@ -2,6 +2,7 @@ import path from "node:path";
 import {
   removeWorkspaceState,
   workspaceState,
+  writeMcpJson,
   writeWorkspaceConfig,
 } from "../workspace.js";
 import { runCommand } from "./process.js";
@@ -58,7 +59,9 @@ export async function workspaceCommand(action: string | undefined, args: string[
         `Intentir bank '${bankId}' was configured, but CodeGraph init failed with exit code ${result.code}`,
       );
     }
-    console.log(JSON.stringify({ initialized: true, ...config }, null, 2));
+    const mcpJson = writeMcpJson(input.path);
+    const mcpServers = Object.keys(mcpJson.mcpServers);
+    console.log(JSON.stringify({ initialized: true, mcpServers, ...config }, null, 2));
     return;
   }
 
