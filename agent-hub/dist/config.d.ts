@@ -1,0 +1,20 @@
+import { type WorkspaceState } from "./workspace.js";
+export interface AgentHubConfig {
+    identity: {
+        bankId: string;
+    };
+    repositoryRoot: string;
+    workspace: WorkspaceState;
+    hindsight: {
+        baseUrl: string;
+        apiKey?: string;
+        tenant: string;
+        timeoutMs: number;
+    };
+    codegraph: {
+        command: string;
+        args: string[];
+        timeoutMs: number;
+    };
+}
+export declare function loadConfig(env?: NodeJS.ProcessEnv): AgentHubConfig;

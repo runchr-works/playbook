@@ -1,0 +1,42 @@
+{
+  "name": "agent-hub",
+  "version": "0.1.0",
+  "description": "One-stop setup CLI for MCP-powered coding agent tools",
+  "type": "module",
+  "bin": {
+    "agent-hub": "./dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runchr-works/playbook.git",
+    "directory": "agent-hub"
+  },
+  "homepage": "https://github.com/runchr-works/playbook/tree/main/agent-hub#readme",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    ".env.example"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "smoke": "node scripts/smoke.mjs",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

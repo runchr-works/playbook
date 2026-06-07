@@ -1,7 +1,13 @@
 {
   "mcpServers": {
-    "intentir": {
-      "command": "intentir"
+    "hindsight": {
+      "url": "http://localhost:8888/mcp/intentir/"
+    },
+    "codegraph": {
+      "command": "codegraph"
+    },
+    "context-mode": {
+      "command": "context-mode"
     }
   }
 }
