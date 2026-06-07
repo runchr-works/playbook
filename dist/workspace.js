@@ -51,6 +51,30 @@ export function writeWorkspaceConfig(repositoryRoot, input) {
     writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 });
     return config;
 }
+export const MCP_JSON_RELATIVE_PATH = ".mcp.json";
+const MCP_SERVER_NAME = "intentir";
+function readMcpJson(repositoryRoot) {
+    const filePath = path.join(repositoryRoot, MCP_JSON_RELATIVE_PATH);
+    if (!existsSync(filePath))
+        return null;
+    try {
+        return JSON.parse(readFileSync(filePath, "utf8"));
+    }
+    catch {
+        return null;
+    }
+}
+export function writeMcpJson(repositoryRoot) {
+    const root = path.resolve(repositoryRoot);
+    const filePath = path.join(root, MCP_JSON_RELATIVE_PATH);
+    let doc = readMcpJson(root);
+    if (!doc) {
+        doc = { mcpServers: {} };
+    }
+    doc.mcpServers[MCP_SERVER_NAME] = { command: "intentir" };
+    writeFileSync(filePath, `${JSON.stringify(doc, null, 2)}\n`);
+    return doc;
+}
 export function removeWorkspaceState(repositoryRoot, purgeGraph) {
     const root = path.resolve(repositoryRoot);
     rmSync(path.join(root, ".intentir"), { recursive: true, force: true });

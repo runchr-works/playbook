@@ -15,4 +15,13 @@ export interface WorkspaceState {
 }
 export declare function workspaceState(repositoryRoot: string): WorkspaceState;
 export declare function writeWorkspaceConfig(repositoryRoot: string, input: Pick<WorkspaceConfig, "bankId">): WorkspaceConfig;
+export declare const MCP_JSON_RELATIVE_PATH = ".mcp.json";
+export interface McpJson {
+    mcpServers: Record<string, {
+        command: string;
+        args?: string[];
+        env?: Record<string, string>;
+    }>;
+}
+export declare function writeMcpJson(repositoryRoot: string): McpJson;
 export declare function removeWorkspaceState(repositoryRoot: string, purgeGraph: boolean): void;
