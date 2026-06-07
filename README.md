@@ -10,12 +10,13 @@
 
 ## Philosophy
 
-We use MCP (Model Context Protocol) to give our coding agents direct access to the
-best tools available. No thin proxies, no filtered features — agents connect directly
-to Hindsight for memory, CodeGraph for code intelligence, and context-mode for
-session tracking.
+We build products. Along the way, we find tools, patterns, and conventions that
+actually work. Playbook is where we share them — not as theory, but as things we
+use every day.
 
-[agent-hub](./agent-hub) handles the setup complexity so humans don't have to.
+Current focus: giving coding agents direct access to the best MCP tools —
+Hindsight for memory, CodeGraph for code intelligence, and context-mode for
+session tracking. No thin proxies, no filtered features.
 
 ## Development
 
