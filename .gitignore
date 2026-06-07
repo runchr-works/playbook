@@ -36,3 +36,4 @@ Thumbs.db
 .vscode/
 .agents/
 .codex/
+.mcp.json
