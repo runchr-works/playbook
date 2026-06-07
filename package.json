@@ -1,6 +1,9 @@
 {
   "name": "playbook",
   "private": true,
+  "bin": {
+    "memkit": "./memkit/dist/cli.js"
+  },
   "workspaces": [
     "memkit"
   ]
