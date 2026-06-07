@@ -4,7 +4,7 @@ import { commandExists } from "./process.js";
 import { checkHindsightHealth } from "./daemon.js";
 export async function doctorCommand(json = false) {
     const userConfig = loadUserConfig();
-    const root = process.env.AGENT_HUB_REPOSITORY_ROOT ?? process.cwd();
+    const root = process.env.MEMKIT_REPOSITORY_ROOT ?? process.cwd();
     const workspace = workspaceState(root);
     const [uvx, codegraph, contextMode, hindsight] = await Promise.all([
         commandExists("uvx"),
@@ -36,7 +36,7 @@ export async function doctorCommand(json = false) {
         console.log(JSON.stringify(report, null, 2));
     }
     else {
-        console.log(`agent-hub doctor: ${report.ok ? "OK" : "attention required"}`);
+        console.log(`memkit doctor: ${report.ok ? "OK" : "attention required"}`);
         console.log(`- user config: ${report.userConfig.ok ? "found" : "missing"} (${report.userConfig.path})`);
         console.log(`- Hindsight: ${hindsight.ok ? "healthy" : hindsight.detail}`);
         console.log(`- uvx: ${uvx ? "available" : "missing"}`);

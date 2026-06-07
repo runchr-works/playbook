@@ -13,7 +13,7 @@ export function uninstallCommand(purge) {
     console.log(JSON.stringify({
         uninstalled: true,
         localHindsightDataPurged: purge,
-        note: "Removed agent-hub global config. Hindsight server is managed separately.",
+        note: "Removed memkit global config. Hindsight server is managed separately.",
     }, null, 2));
 }
 //# sourceMappingURL=uninstall.js.map

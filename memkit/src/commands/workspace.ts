@@ -44,9 +44,9 @@ function parse(args: string[]): ParsedOptions {
 export async function workspaceCommand(action: string | undefined, args: string[]): Promise<void> {
   const input = parse(args);
   if (action === "init") {
-    const bankId = input.bankId ?? process.env.AGENT_HUB_BANK_ID;
+    const bankId = input.bankId ?? process.env.MEMKIT_BANK_ID;
     if (!bankId) {
-      throw new Error("agent-hub init requires --bank <bank-id>");
+      throw new Error("memkit init requires --bank <bank-id>");
     }
     const config = writeWorkspaceConfig(input.path, { bankId });
     const command = process.env.CODEGRAPH_COMMAND ?? "codegraph";
@@ -56,7 +56,7 @@ export async function workspaceCommand(action: string | undefined, args: string[
     });
     if (result.code !== 0) {
       throw new Error(
-        `agent-hub bank '${bankId}' was configured, but CodeGraph init failed with exit code ${result.code}`,
+        `memkit bank '${bankId}' was configured, but CodeGraph init failed with exit code ${result.code}`,
       );
     }
     // Load hindsight URL from user config for mcp.json generation
@@ -110,7 +110,7 @@ export async function workspaceCommand(action: string | undefined, args: string[
     return;
   }
 
-  throw new Error("Usage: agent-hub workspace <status|sync|remove> [path]");
+  throw new Error("Usage: memkit workspace <status|sync|remove> [path]");
 }
 
 function parseJsonOrText(value: string): unknown {

@@ -13,9 +13,9 @@ export function agentsCommand(action: string | undefined, args: string[]): void 
   }
   if (action === "config") {
     const requested = args[0];
-    if (!requested) throw new Error("Usage: agent-hub agents config <agent> [--root <path>]");
+    if (!requested) throw new Error("Usage: memkit agents config <agent> [--root <path>]");
     const agent = findAgent(requested);
-    if (!agent) throw new Error(`Unsupported agent: ${requested}. Run \`agent-hub agents list\`.`);
+    if (!agent) throw new Error(`Unsupported agent: ${requested}. Run \`memkit agents list\`.`);
     const repositoryRoot = path.resolve(option(args, "--root") ?? process.cwd());
     console.log(`# ${agent.name}`);
     console.log(`# Hindsight upstream: ${agent.hindsightSupport}`);
@@ -24,5 +24,5 @@ export function agentsCommand(action: string | undefined, args: string[]): void 
     console.log(agentConfig(agent, repositoryRoot));
     return;
   }
-  throw new Error("Usage: agent-hub agents <list|config>");
+  throw new Error("Usage: memkit agents <list|config>");
 }

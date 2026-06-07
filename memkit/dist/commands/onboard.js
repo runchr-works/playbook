@@ -139,12 +139,12 @@ Full setup: https://github.com/mksglu/context-mode#install
 }
 export async function onboardCommand() {
     if (!process.stdin.isTTY) {
-        throw new Error("agent-hub onboard requires an interactive terminal");
+        throw new Error("memkit onboard requires an interactive terminal");
     }
     const maskedOutput = new MaskedOutput();
     const rl = createInterface({ input, output: maskedOutput, terminal: true });
     try {
-        console.log("agent-hub onboarding");
+        console.log("memkit onboarding");
         const modeAnswer = await ask(rl, "Hindsight storage: 1) local pg0 2) Supabase 3) existing server", "1");
         const mode = modeAnswer === "2"
             ? "supabase"
@@ -244,17 +244,17 @@ export async function onboardCommand() {
                 const ready = await waitForHindsight(env.HINDSIGHT_BASE_URL);
                 console.log(ready
                     ? "Hindsight is ready."
-                    : "Hindsight is still initializing. Check with `agent-hub doctor`.");
+                    : "Hindsight is still initializing. Check with `memkit doctor`.");
             }
         }
-        console.log("Onboarding complete. Run `agent-hub init --bank <bank-id>` in each repository.");
-        console.log("Then run `agent-hub doctor` to verify the environment.");
-        console.log("Run `agent-hub agents list` and `agent-hub agents config <agent>` for client-specific MCP setup.");
+        console.log("Onboarding complete. Run `memkit init --bank <bank-id>` in each repository.");
+        console.log("Then run `memkit doctor` to verify the environment.");
+        console.log("Run `memkit agents list` and `memkit agents config <agent>` for client-specific MCP setup.");
         console.log("\nYour agent connects directly to:");
         console.log("  - Hindsight (http://localhost:8888/mcp/<bank-id>/)");
         console.log("  - CodeGraph (command: codegraph)");
         console.log("  - context-mode (command: context-mode)");
-        console.log("\nUse `agent-hub init --bank <bank-id>` to generate .mcp.json with these connections.");
+        console.log("\nUse `memkit init --bank <bank-id>` to generate .mcp.json with these connections.");
     }
     finally {
         rl.close();
