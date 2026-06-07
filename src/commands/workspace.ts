@@ -103,7 +103,7 @@ export async function workspaceCommand(action: string | undefined, args: string[
     return;
   }
 
-  throw new Error("Usage: intentir workspace <init|status|sync|remove> [path]");
+  throw new Error("Usage: intentir workspace <status|sync|remove> [path]");
 }
 
 function parseJsonOrText(value: string): unknown {

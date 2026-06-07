@@ -168,7 +168,7 @@ To try Intentir without installing it globally:
 npx -y github:runchr-works/intentir
 ```
 
-## Workspace Commands
+## Repository Commands
 
 Hindsight is configured once during onboarding. Each repository must then be initialized with an explicit
 bank ID. The command stores the bank ID in `.intentir/config.json` and initializes the local CodeGraph
@@ -176,7 +176,11 @@ index:
 
 ```bash
 intentir init [path] --bank <bank-id>
-intentir workspace init [path] --bank <bank-id>  # alias
+```
+
+After initialization, manage the repository workspace with:
+
+```bash
 intentir workspace status [path]
 intentir workspace sync [path]
 intentir workspace remove [path]
@@ -194,6 +198,120 @@ Run installation diagnostics:
 intentir doctor
 intentir doctor --json
 ```
+
+## Hindsight Daemon
+
+Onboarding can start the managed local Hindsight process, but that detached process is not registered to
+start again after a reboot. Use these commands to manage it manually:
+
+```bash
+intentir daemon start          # start in the background and wait until healthy
+intentir daemon start --no-wait
+intentir daemon status
+intentir daemon stop
+intentir daemon run            # foreground mode for an OS service manager
+```
+
+`daemon start` can take time on its first run while `uvx` downloads Hindsight and Hindsight initializes
+its database. `daemon run` is intended for the operating-system configurations below. These commands are
+unavailable when onboarding was configured to use an existing Hindsight server, except that
+`daemon status` can still check that server's health. Manage the external server separately.
+
+### Linux: systemd user service
+
+Find the absolute executable path with `command -v intentir`, then create
+`~/.config/systemd/user/intentir-hindsight.service`:
+
+```ini
+[Unit]
+Description=Intentir Hindsight daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/absolute/path/to/intentir daemon run
+Environment=PATH=/absolute/node/bin:/home/USER/.local/bin:/usr/local/bin:/usr/bin:/bin
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+```
+
+Replace `ExecStart` with the path returned by `command -v intentir`. Set `PATH` so it includes the
+directories reported by `dirname "$(command -v node)"` and `dirname "$(command -v uvx)"`, then enable
+the service:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now intentir-hindsight.service
+systemctl --user status intentir-hindsight.service
+journalctl --user -u intentir-hindsight.service -f
+```
+
+The user service starts when you log in. To start it before login, enable lingering with
+`loginctl enable-linger "$USER"` if your system permits it. Paths installed through a Node version
+manager can change after a Node upgrade; update `ExecStart` when that happens.
+
+### macOS: launchd
+
+Find the absolute executable path with `command -v intentir`, then create
+`~/Library/LaunchAgents/io.intentir.hindsight.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>io.intentir.hindsight</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/absolute/path/to/intentir</string>
+    <string>daemon</string>
+    <string>run</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/absolute/node/bin:/Users/NAME/.local/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+</dict>
+</plist>
+```
+
+Replace the executable path and set `PATH` so it includes the directories containing `node` and `uvx`,
+then load it:
+
+```bash
+launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/io.intentir.hindsight.plist
+launchctl kickstart -k "gui/$(id -u)/io.intentir.hindsight"
+```
+
+Remove it with:
+
+```bash
+launchctl bootout "gui/$(id -u)" ~/Library/LaunchAgents/io.intentir.hindsight.plist
+```
+
+### Windows: Task Scheduler
+
+Run `Get-Command intentir.cmd` in PowerShell to find the absolute path. In Task Scheduler, create a task
+with:
+
+- Trigger: **At log on**
+- Program: `C:\Windows\System32\cmd.exe`
+- Arguments: `/d /c ""C:\absolute\path\to\intentir.cmd" daemon run"`
+- Settings: enable automatic restart after failure
+
+Start the task once, then verify it with `intentir daemon status`. If the npm global directory changes
+after a Node upgrade, update the command path in the task.
 
 Remove global Intentir configuration while preserving Hindsight data and repository indexes:
 

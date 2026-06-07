@@ -9,6 +9,7 @@ import { onboardCommand } from "./commands/onboard.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { workspaceCommand } from "./commands/workspace.js";
 import { agentsCommand } from "./commands/agents.js";
+import { daemonCommand } from "./commands/daemon.js";
 function debug(message) {
     if (process.env.INTENTIR_DEBUG === "true")
         console.error(`intentir: ${message}`);
@@ -67,6 +68,9 @@ async function main() {
         return;
     }
     if (command === "workspace") {
+        if (action === "init") {
+            throw new Error("Use `intentir init [path] --bank <bank-id>` to initialize a repository.");
+        }
         await workspaceCommand(action, args);
         return;
     }
@@ -76,6 +80,10 @@ async function main() {
     }
     if (command === "doctor") {
         await doctorCommand(action === "--json" || args.includes("--json"));
+        return;
+    }
+    if (command === "daemon") {
+        await daemonCommand(action, args);
         return;
     }
     if (command === "uninstall") {
@@ -96,14 +104,16 @@ Usage:
   intentir onboard                Configure Hindsight, LLMs, and CodeGraph
   intentir init [path] --bank <bank-id>
                                   Initialize repository memory and CodeGraph
-  intentir workspace init [path] --bank <bank-id>
-                                  Alias for intentir init
   intentir workspace status       Show workspace and CodeGraph status
   intentir workspace sync         Sync the CodeGraph index
   intentir workspace remove       Remove Intentir workspace state
   intentir agents list            List supported agent clients
   intentir agents config <agent>  Print an MCP configuration for an agent
   intentir doctor [--json]        Diagnose the installation and current workspace
+  intentir daemon start           Start Hindsight and wait until healthy
+  intentir daemon stop            Stop the managed Hindsight daemon
+  intentir daemon status          Show process and health status
+  intentir daemon run             Run Hindsight in the foreground for OS services
   intentir uninstall [--purge]    Remove global Intentir configuration
 `);
 }

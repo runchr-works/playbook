@@ -2,7 +2,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin as input } from "node:process";
 import { commandExists, runCommand } from "./process.js";
 import { saveUserConfig } from "../user-config.js";
-import { startHindsightDaemon } from "./daemon.js";
+import { startHindsightDaemon, waitForHindsight } from "./daemon.js";
 import { HINDSIGHT_LLM_RECOMMENDATIONS, recommendationFor, } from "../llm-recommendations.js";
 import { MaskedOutput } from "./masked-output.js";
 async function ask(rl, prompt, fallback) {
@@ -109,7 +109,11 @@ export async function onboardCommand() {
                 .toLowerCase() !== "n";
             if (start) {
                 const pid = await startHindsightDaemon(env);
-                console.log(`Hindsight started with PID ${pid}.`);
+                console.log(`Hindsight started with PID ${pid}. Waiting until it is ready...`);
+                const ready = await waitForHindsight(env.HINDSIGHT_BASE_URL);
+                console.log(ready
+                    ? "Hindsight is ready."
+                    : "Hindsight is still initializing. Run `intentir daemon status` to check it.");
             }
         }
         console.log("Onboarding complete. Run `intentir init --bank <bank-id>` in each repository.");

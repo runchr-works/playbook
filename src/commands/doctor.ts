@@ -1,7 +1,7 @@
 import { loadUserConfig, userConfigPath } from "../user-config.js";
 import { workspaceState } from "../workspace.js";
 import { commandExists } from "./process.js";
-import { hindsightPid, isProcessRunning } from "./daemon.js";
+import { checkHindsightHealth, hindsightPid, isProcessRunning } from "./daemon.js";
 
 export async function doctorCommand(json = false): Promise<void> {
   const userConfig = loadUserConfig();
@@ -10,7 +10,7 @@ export async function doctorCommand(json = false): Promise<void> {
   const [uvx, codegraph, hindsight] = await Promise.all([
     commandExists("uvx"),
     commandExists(process.env.CODEGRAPH_COMMAND ?? "codegraph"),
-    checkHindsight(userConfig?.env.HINDSIGHT_BASE_URL ?? "http://localhost:8888"),
+    checkHindsightHealth(userConfig?.env.HINDSIGHT_BASE_URL ?? "http://localhost:8888"),
   ]);
   const pid = hindsightPid();
   const report = {
@@ -45,17 +45,4 @@ export async function doctorCommand(json = false): Promise<void> {
     );
   }
   if (!report.ok) process.exitCode = 1;
-}
-
-async function checkHindsight(baseUrl: string): Promise<{ ok: boolean; detail: string }> {
-  try {
-    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/health`, {
-      signal: AbortSignal.timeout(3_000),
-    });
-    return response.ok
-      ? { ok: true, detail: `healthy (${response.status})` }
-      : { ok: false, detail: `HTTP ${response.status}` };
-  } catch (error) {
-    return { ok: false, detail: error instanceof Error ? error.message : String(error) };
-  }
 }
