@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "bin": {
-    "memkit": "./cli.js"
+    "memkit": "./memkit/dist/cli.js"
   },
-  "workspaces": [
-    "memkit"
-  ]
+  "scripts": {
+    "setup": "cd memkit && npm install && npm run build"
+  }
 }

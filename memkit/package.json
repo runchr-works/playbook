@@ -15,10 +15,6 @@
   "exports": {
     ".": "./dist/index.js"
   },
-  "files": [
-    "dist",
-    ".env.example"
-  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
