@@ -150,16 +150,25 @@ Add Intentir to your MCP client:
 }
 ```
 
-Restart the MCP client, then ask the agent:
+Restart the MCP client. Your agent discovers Intentir's tools and maps natural language
+to the right MCP tool automatically. Try these in your agent:
 
 ```text
-Check Intentir health.
-Find the authentication flow using project memory and the code graph.
-Remember that database migrations must be backward compatible.
-Show me the shared memories for this project.
-Promote that memory to shared project memory.
-That memory is incorrect. Forget it.
+# Code exploration → code_search, code_callers, code_callees, code_dependencies
 Show callers and dependencies of AuthService.
+Find where password hashing is implemented.
+
+# Project memory → memory_recall, memory_retain, memory_review, memory_forget
+Remember that database migrations must be backward compatible.
+Search project memory for authentication patterns.
+Show me the shared memories for this project.
+That memory is incorrect. Forget it.
+
+# Combined context → intent_context (memory + code graph in parallel)
+Find the authentication flow using project memory and the code graph.
+
+# Health check → intentir_health
+Check Intentir health.
 ```
 
 To try Intentir without installing it globally:
@@ -388,7 +397,7 @@ that every MCP client has a first-party integration.
 | Kiro | Generic MCP-compatible | Documented | Native stdio MCP |
 | Hermes Agent | Community integration | Documented | Native stdio MCP |
 | Reasonix (`resonix`) | Generic MCP-compatible | Not explicitly documented | Native stdio MCP |
-| Pi | Not explicitly documented | Not explicitly documented | Community adapter required |
+| Pi | Not explicitly documented | Not explicitly documented | via pi-mcp-adapter |
 
 Reasonix is the DeepSeek-native terminal coding agent listed in the
 [DeepSeek API documentation](https://api-docs.deepseek.com/quick_start/agent_integrations/reasonix).
@@ -402,7 +411,35 @@ intentir agents list
 intentir agents config codex --root /path/to/repo
 intentir agents config claude-code --root /path/to/repo
 intentir agents config reasonix --root /path/to/repo
+intentir agents config pi --root /path/to/repo
 ```
+
+### Pi Setup
+
+Pi uses [pi-mcp-adapter](https://github.com/nicopreme/pi-mcp-adapter) to bridge stdio MCP servers.
+Install it once, then add Intentir through the adapter's standard `.mcp.json` file:
+
+```bash
+pi install npm:pi-mcp-adapter
+```
+
+Create `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "intentir": {
+      "command": "intentir",
+      "env": {
+        "INTENTIR_REPOSITORY_ROOT": "/absolute/path/to/portal-api"
+      }
+    }
+  }
+}
+```
+
+Restart Pi and use `/mcp` to inspect connected servers. Give the agent natural language
+instructions as shown above — it calls the MCP tools on demand.
 
 All configured clients for the same repository use the same bank.
 

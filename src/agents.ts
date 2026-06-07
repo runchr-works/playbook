@@ -76,8 +76,8 @@ export const AGENTS: AgentDescriptor[] = [
     hindsightSupport: "not-documented",
     codegraphSupport: "not-documented",
     intentirTransport: "adapter",
-    configLocation: "Pi extension configuration",
-    notes: "Requires a community MCP adapter; Pi does not provide native stdio MCP client support.",
+    configLocation: "project .mcp.json (pi-mcp-adapter) or .pi/mcp.json",
+    notes: "Install pi-mcp-adapter (pi install npm:pi-mcp-adapter), then configure through the adapter's standard .mcp.json file.",
     officialUrl: "https://github.com/badlogic/pi-mono",
   },
   {
@@ -170,9 +170,11 @@ export function agentConfig(
   }
   if (agent.id === "pi") {
     return [
-      "Pi requires an MCP adapter.",
-      "Configure the adapter to launch:",
-      JSON.stringify(stdio, null, 2),
+      "# Install the adapter:",
+      "#   pi install npm:pi-mcp-adapter",
+      "#",
+      "# Then save as project .mcp.json:",
+      JSON.stringify({ mcpServers: { intentir: stdio } }, null, 2),
     ].join("\n");
   }
   return JSON.stringify({ mcpServers: { intentir: stdio } }, null, 2);
