@@ -90,7 +90,7 @@ After `init`, your project's `.mcp.json` is ready. Restart your agent.
 | Command | Purpose |
 |---------|---------|
 | `memkit onboard` | Install and configure Hindsight, CodeGraph, context-mode |
-| `memkit init [path] --bank <bank-id>` | Initialize repository memory and CodeGraph |
+| `memkit init [path] --bank <bank-id>` | Create Hindsight bank, build CodeGraph index, write `.mcp.json` |
 | `memkit doctor [--json]` | Check all tools are installed and connected |
 | `memkit workspace status` | Show workspace and CodeGraph index status |
 | `memkit workspace sync` | Sync the CodeGraph index |
@@ -113,13 +113,18 @@ After `init`, your project's `.mcp.json` is ready. Restart your agent.
 
 1. `onboard` installs Hindsight (via uvx), CodeGraph (npm), and context-mode (npm).
    It asks for Hindsight's LLM provider and storage backend, then starts Hindsight
-   and generates `.mcp.json` in your project.
+   and writes global config to `~/.config/memkit/config.json`.
 
-2. Your agent connects directly to each tool. No memkit runtime, no filtered
-   tool list — you get all 29 Hindsight tools, full CodeGraph power, and
+2. `init` creates a Hindsight memory bank, runs `codegraph init` followed by
+   `codegraph index` to build a local code graph (`.codegraph/codegraph.db`),
+   and writes `.mcp.json` into your project root. No separate `codegraph init`
+   step needed.
+
+3. Your agent connects directly to each tool. No memkit runtime, no filtered
+   tool list — you get all 27 Hindsight tools, full CodeGraph power, and
    context-mode session tracking.
 
-3. `doctor` verifies all three tools are installed, running, and connected.
+4. `doctor` verifies all three tools are installed, running, and connected.
 
 ## Agent Setup
 
@@ -140,6 +145,73 @@ Most agents need one extra step after `init` — check the table below:
 | Hermes Agent | Needs manual config | Copy the `mcpServers` block into Hermes MCP configuration |
 
 Run `memkit agents config <agent>` to print the exact JSON your agent needs.
+
+## Server Management
+
+Hindsight runs as a long-lived HTTP server on `localhost:8888`. CodeGraph runs on
+demand via stdio MCP — your agent's MCP adapter spawns `codegraph serve --mcp`
+automatically when it connects. context-mode runs as a native extension inside
+Pi — no separate process to manage.
+
+### Starting Hindsight
+
+```bash
+uv tool uvx --from hindsight-api hindsight-local-mcp
+```
+
+Hindsight reads its configuration from `~/.config/memkit/config.json` (created by
+`memkit onboard`). The server logs to stdout.
+
+#### Auto-start with systemd (optional)
+
+To start Hindsight automatically on boot:
+
+```bash
+mkdir -p ~/.config/systemd/user
+
+cat << 'EOF' > ~/.config/systemd/user/hindsight.service
+[Unit]
+Description=Hindsight MCP Memory Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=uv tool uvx --from hindsight-api hindsight-local-mcp
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=%h/.config/memkit/config.json
+
+[Install]
+WantedBy=default.target
+EOF
+
+systemctl --user daemon-reload
+systemctl --user enable --now hindsight.service
+```
+
+### CodeGraph
+
+CodeGraph is initialized by `memkit init` — no separate `codegraph init` step
+needed. The `init` command runs `codegraph init` and `codegraph index` under the
+hood, creating `.codegraph/codegraph.db` in your project root.
+
+Your agent's MCP adapter spawns `codegraph serve --mcp` automatically when it
+connects. To sync the index after code changes:
+
+```bash
+memkit workspace sync
+# or directly:
+codegraph sync
+```
+
+### After reboot
+
+1. Start Hindsight (if not using systemd auto-start):
+   ```bash
+   uv tool uvx --from hindsight-api hindsight-local-mcp
+   ```
+2. Restart your coding agent to reconnect MCP adapters.
+3. Run `memkit doctor` to verify everything is connected.
 
 ## Prerequisites
 
