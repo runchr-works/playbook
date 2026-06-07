@@ -87,6 +87,7 @@ export interface ContextModeProvider {
         detected: boolean;
         adapter: string;
         dir: string;
+        commandInstalled: boolean;
     }>;
     lastSession(projectHash: string): Promise<SessionSummary | null>;
 }

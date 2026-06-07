@@ -6,6 +6,7 @@ export declare class ContextModeReader implements ContextModeProvider {
         detected: boolean;
         adapter: string;
         dir: string;
+        commandInstalled: boolean;
     }>;
     lastSession(repositoryRoot: string): Promise<SessionSummary | null>;
 }

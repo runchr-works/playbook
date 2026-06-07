@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
@@ -21,6 +22,14 @@ function navigateCaseInsensitive(base: string, segment: string): string | null {
     // permission denied or not a directory
   }
   return null;
+}
+
+function commandInstalled(command: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = spawn(command, ["--version"], { stdio: "ignore" });
+    child.on("error", () => resolve(false));
+    child.on("close", (code) => resolve(code === 0));
+  });
 }
 
 function detectContextMode(env: NodeJS.ProcessEnv): ContextModeDetection | null {
@@ -285,10 +294,13 @@ export class ContextModeReader implements ContextModeProvider {
     this.env = env;
   }
 
-  async detect(): Promise<{ detected: boolean; adapter: string; dir: string }> {
+  async detect(): Promise<{ detected: boolean; adapter: string; dir: string; commandInstalled: boolean }> {
     const result = detectContextMode(this.env);
-    if (!result) return { detected: false, adapter: "", dir: "" };
-    return { detected: true, adapter: result.adapter, dir: result.sessionsDir };
+    if (result) {
+      return { detected: true, adapter: result.adapter, dir: result.sessionsDir, commandInstalled: true };
+    }
+    const installed = await commandInstalled("context-mode");
+    return { detected: false, adapter: "", dir: "", commandInstalled: installed };
   }
 
   async lastSession(repositoryRoot: string): Promise<SessionSummary | null> {

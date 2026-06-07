@@ -92,14 +92,23 @@ export class IntentirGateway {
       };
     }
 
-    const { detected, adapter, dir } = await this.contextMode.detect();
+    const { detected, adapter, dir, commandInstalled } = await this.contextMode.detect();
+    if (!commandInstalled) {
+      return {
+        detected: false,
+        adapter: null,
+        sessionCount: 0,
+        retained: [],
+        summary: "context-mode is not installed. Run `npm install -g context-mode` or re-run `intentir onboard`.",
+      };
+    }
     if (!detected) {
       return {
         detected: false,
         adapter: null,
         sessionCount: 0,
         retained: [],
-        summary: "context-mode not found on this machine",
+        summary: "context-mode is installed but no sessions recorded yet. Make sure it's connected as an MCP server for your agent (see README for per-agent setup).",
       };
     }
 

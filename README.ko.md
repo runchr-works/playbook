@@ -283,6 +283,83 @@ AuthService를 호출하는 코드와 의존 관계를 보여줘.
 Intentir 상태를 확인해줘.
 ```
 
+### Context-Mode 설정
+
+context-mode는 에이전트로 작업하는 동안 세션 결정, 컨벤션, 에러 해결법을 자동으로
+캡처합니다. `memory_sweep`이 이 인사이트를 Hindsight 공유 기억으로 승격하여, 모든
+에이전트가 각 세션에서 배운 내용을 공유할 수 있게 됩니다.
+
+context-mode는 선택 사항이며, 없어도 Intentir는 정상 동작합니다.
+
+#### 설치
+
+context-mode를 전역으로 설치합니다.
+
+```bash
+npm install -g context-mode
+```
+
+또는 `intentir onboard`에서 설치를 진행할 수 있습니다.
+
+#### 에이전트에 연결
+
+context-mode는 전역 MCP 서버로 실행되며, 각 에이전트마다 한 번만 설정하면 됩니다.
+
+**방법 A: 자동 (`intentir onboard` 실행 시)**
+
+온보딩이 기존 에이전트 MCP 설정 파일을 감지하여 context-mode를 자동으로 추가합니다.
+Pi와 Claude Code는 추가 단계가 하나 필요합니다.
+
+```text
+# Pi 내부에서:
+pi install npm:context-mode
+
+# Claude Code 내부에서:
+/plugin install context-mode@context-mode
+```
+
+**방법 B: 수동 설정**
+
+에이전트의 전역 MCP 설정 파일에 다음을 추가합니다.
+
+```json
+{
+  "mcpServers": {
+    "context-mode": { "command": "context-mode" }
+  }
+}
+```
+
+설정 파일 위치:
+
+| 에이전트 | 전역 MCP 설정 경로 | 추가 단계 |
+| --- | --- | --- |
+| Pi | `~/.pi/mcp.json` | Pi 내부에서 `pi install npm:context-mode` 실행 |
+| Claude Code | `~/.claude/mcp.json` | Claude Code 내부에서 `/plugin install context-mode@context-mode` 실행 |
+| Codex CLI | `~/.codex/mcp.json` | — |
+| Cursor | `~/.cursor/mcp.json` | — |
+| OpenCode | `~/.config/opencode/mcp.json` | — |
+| Gemini CLI | `~/.gemini/mcp.json` | — |
+| Kiro | `~/.kiro/settings/mcp.json` | — |
+
+설정 후 에이전트를 재시작합니다.
+
+#### 확인
+
+context-mode가 최소 한 번 이상 세션을 기록한 후에는 `memory_sweep`이 이를 감지하여
+Hindsight로 인사이트를 승격합니다.
+
+```text
+# 에이전트에게 요청:
+context-mode 세션을 스윕해서 프로젝트 기억으로 승격해줘.
+```
+
+"context-mode가 설치되었지만 아직 세션이 기록되지 않았습니다"라는 메시지가 표시되면,
+context-mode가 에이전트의 MCP 서버로 연결되어 있고, 설정 후 최소 한 번 이상 에이전트와
+대화를 진행했는지 확인하세요.
+
+전체 문서: [context-mode](https://github.com/mksglu/context-mode)
+
 ## 저장소 명령
 
 Hindsight는 onboarding에서 한 번만 설정합니다. 그 다음 각 저장소를 명시적인 bank ID로

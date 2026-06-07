@@ -283,6 +283,83 @@ Find the authentication flow using project memory and the code graph.
 Check Intentir health.
 ```
 
+### Context-Mode Setup
+
+context-mode captures session decisions, conventions, and error fixes as you work
+with your agent. `memory_sweep` then promotes those insights to shared Hindsight
+memory — letting all agents learn from every session.
+
+context-mode is optional. Intentir works without it.
+
+#### Install
+
+Install context-mode globally:
+
+```bash
+npm install -g context-mode
+```
+
+Or let `intentir onboard` install it for you.
+
+#### Connect to Your Agent
+
+context-mode runs as a global MCP server — configure it once per agent.
+
+**Option A: Automatic (during `intentir onboard`)**
+
+Onboarding detects existing agent MCP configs and adds context-mode automatically.
+Pi and Claude Code require one extra step:
+
+```text
+# Inside Pi:
+pi install npm:context-mode
+
+# Inside Claude Code:
+/plugin install context-mode@context-mode
+```
+
+**Option B: Manual**
+
+Add this to your agent's global MCP config:
+
+```json
+{
+  "mcpServers": {
+    "context-mode": { "command": "context-mode" }
+  }
+}
+```
+
+Common config locations:
+
+| Agent | Global MCP config path | Extra step |
+| --- | --- | --- |
+| Pi | `~/.pi/mcp.json` | `pi install npm:context-mode` inside Pi |
+| Claude Code | `~/.claude/mcp.json` | `/plugin install context-mode@context-mode` inside Claude Code |
+| Codex CLI | `~/.codex/mcp.json` | — |
+| Cursor | `~/.cursor/mcp.json` | — |
+| OpenCode | `~/.config/opencode/mcp.json` | — |
+| Gemini CLI | `~/.gemini/mcp.json` | — |
+| Kiro | `~/.kiro/settings/mcp.json` | — |
+
+Restart your agent after configuration.
+
+#### Verify
+
+After context-mode has recorded at least one session, `memory_sweep` will detect
+it and promote findings to Hindsight:
+
+```text
+# Tell your agent:
+Sweep context-mode sessions and promote findings to project memory.
+```
+
+If you get "context-mode is installed but no sessions recorded yet", make sure
+context-mode is running as an MCP server for your agent and you've had at least
+one conversation with the agent since configuring it.
+
+Full docs: [context-mode](https://github.com/mksglu/context-mode)
+
 ## Repository Commands
 
 Hindsight is configured once during onboarding. Each repository must then be initialized with an explicit

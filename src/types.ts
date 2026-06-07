@@ -86,7 +86,7 @@ export interface SweepResult {
 }
 
 export interface ContextModeProvider {
-  detect(): Promise<{ detected: boolean; adapter: string; dir: string }>;
+  detect(): Promise<{ detected: boolean; adapter: string; dir: string; commandInstalled: boolean }>;
   lastSession(projectHash: string): Promise<SessionSummary | null>;
 }
 

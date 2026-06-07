@@ -79,6 +79,7 @@ function printContextModeSetup() {
     console.log("\ncontext-mode is a global MCP server — configure it once per agent.");
     console.log("Adding it to repo .mcp.json files is unnecessary (and would be duplicated).\n");
     const detected = detectAgentMcpPaths();
+    const configuredAgents = [];
     if (detected.length > 0) {
         console.log("Detected agent global MCP configs:");
         let added = 0;
@@ -88,13 +89,29 @@ function printContextModeSetup() {
             console.log(`  ${agent.name.padEnd(14)} ${agent.path}  ${status}`);
             if (wasAdded)
                 added++;
+            configuredAgents.push(agent.name);
         }
         if (added > 0) {
-            console.log(`\ncontext-mode added to ${added} agent config(s). Restart the agent(s) to activate.`);
+            console.log(`\ncontext-mode added to ${added} agent config(s).`);
         }
     }
     else {
         console.log("No known agent global MCP configs detected. Add context-mode manually:");
+    }
+    // Per-agent next steps
+    const hasPi = configuredAgents.some((n) => n === "Pi");
+    const hasClaude = configuredAgents.some((n) => n === "Claude Code");
+    if (hasPi || hasClaude) {
+        console.log("\n⚠️  Additional steps required for these agents:");
+        if (hasPi) {
+            console.log("  Pi: run this INSIDE Pi →  pi install npm:context-mode");
+        }
+        if (hasClaude) {
+            console.log("  Claude Code: run this INSIDE Claude Code →  /plugin install context-mode@context-mode");
+        }
+    }
+    if (configuredAgents.length > 0) {
+        console.log("\nRestart the agent(s) to activate context-mode.");
     }
     console.log(`
 Global MCP config — add this to your agent's global MCP settings:
@@ -114,8 +131,8 @@ Common locations:
   Gemini CLI:  ~/.gemini/mcp.json
   Kiro:        ~/.kiro/settings/mcp.json
 
-Pi users also need:  pi install npm:context-mode
-Claude Code users:    /plugin install context-mode@context-mode
+Pi users also need:  pi install npm:context-mode  (run inside Pi)
+Claude Code users:    /plugin install context-mode@context-mode  (run inside Claude Code)
 
 Full setup: https://github.com/mksglu/context-mode#install
 `);
