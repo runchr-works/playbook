@@ -69,7 +69,7 @@ existing Hindsight server, `uvx` is not required.
 Run the interactive onboarding:
 
 ```bash
-npx github:runchr-works/intentir onboard
+npx -y github:runchr-works/intentir onboard
 ```
 
 It asks for:
@@ -119,7 +119,7 @@ Hindsight connects as a PostgreSQL client:
    - Direct connection on port `5432` when the machine supports IPv6 or the project has IPv4 support.
    - Shared Pooler **Session mode** on port `5432` for an IPv4-only machine.
 5. Copy the Direct connection URL on port `5432` for migrations when it is reachable.
-6. Enter those values during `intentir onboard`.
+6. Enter those values during `npx -y github:runchr-works/intentir onboard`.
 
 Intentir stores them as:
 
@@ -135,7 +135,7 @@ Then initialize each repository separately:
 
 ```bash
 cd /path/to/portal-api
-npx github:runchr-works/intentir workspace init --org acme --project customer-portal
+npx -y github:runchr-works/intentir workspace init --org acme --project customer-portal
 ```
 
 Add Intentir to your MCP client:
@@ -170,7 +170,7 @@ Show callers and dependencies of AuthService.
 Run directly from GitHub:
 
 ```bash
-npx github:runchr-works/intentir
+npx -y github:runchr-works/intentir
 ```
 
 Or install globally:
@@ -180,17 +180,20 @@ npm install --global github:runchr-works/intentir
 intentir onboard
 ```
 
+The shorter `intentir ...` form is available only after the global install. The examples below use `npx`
+so they also work for users following the default Quick Start.
+
 ## Workspace Commands
 
 Hindsight is configured once during onboarding. It is not initialized per repository. CodeGraph and
 repository identity are managed per workspace:
 
 ```bash
-intentir workspace init [path]     # create identity and run codegraph init -i
-intentir workspace status [path]   # inspect identity and graph status
-intentir workspace sync [path]     # update the CodeGraph index
-intentir workspace remove [path]   # remove .intentir, preserve .codegraph
-intentir workspace remove --purge-graph [path]
+npx -y github:runchr-works/intentir workspace init [path]
+npx -y github:runchr-works/intentir workspace status [path]
+npx -y github:runchr-works/intentir workspace sync [path]
+npx -y github:runchr-works/intentir workspace remove [path]
+npx -y github:runchr-works/intentir workspace remove --purge-graph [path]
 ```
 
 Without `workspace init`, memory tools can still work when all identity environment variables are supplied
@@ -200,17 +203,18 @@ CodeGraph error.
 Run installation diagnostics:
 
 ```bash
-intentir doctor
-intentir doctor --json
+npx -y github:runchr-works/intentir doctor
+npx -y github:runchr-works/intentir doctor --json
 ```
 
 Remove global Intentir configuration while preserving Hindsight data and repository indexes:
 
 ```bash
-intentir uninstall
+npx -y github:runchr-works/intentir uninstall
 ```
 
-Use `intentir uninstall --purge` only to delete the managed local pg0 data as well.
+Use `npx -y github:runchr-works/intentir uninstall --purge` only to delete the managed local pg0 data as
+well.
 
 ## Automatic Promotion
 
@@ -299,10 +303,10 @@ claims a dedicated Reasonix integration.
 List integrations or generate a client-specific configuration:
 
 ```bash
-intentir agents list
-intentir agents config codex --persona backend-engineer --root /path/to/repo
-intentir agents config claude-code --persona backend-engineer --root /path/to/repo
-intentir agents config reasonix --persona code-reviewer --root /path/to/repo
+npx -y github:runchr-works/intentir agents list
+npx -y github:runchr-works/intentir agents config codex --persona backend-engineer --root /path/to/repo
+npx -y github:runchr-works/intentir agents config claude-code --persona backend-engineer --root /path/to/repo
+npx -y github:runchr-works/intentir agents config reasonix --persona code-reviewer --root /path/to/repo
 ```
 
 `agentId` is a logical persona, not necessarily the client product. Use the same persona when Codex and
@@ -350,7 +354,7 @@ Run `intentir_health` first.
 
 - Hindsight unavailable: verify `HINDSIGHT_BASE_URL`, credentials, and `curl /health`.
 - CodeGraph unavailable: run `codegraph status` in `INTENTIR_REPOSITORY_ROOT`; initialize with
-  `intentir workspace init` if needed.
+  `npx -y github:runchr-works/intentir workspace init` if needed.
 - Automatic promotion inactive: set both `PROMOTION_LLM_API_KEY` and `PROMOTION_LLM_MODEL`.
 - Memory not found during promotion: use the `sourceId` returned by `memory_retain` or `memory_review` with
   the same organization, project, workspace, repository, and agent identity.

@@ -142,9 +142,10 @@ export async function onboardCommand() {
                 console.log(`Hindsight started with PID ${pid}.`);
             }
         }
-        console.log("Onboarding complete. Run `intentir workspace init` in each repository.");
-        console.log("Then run `intentir doctor` to verify the environment.");
-        console.log("Run `intentir agents list` and `intentir agents config <agent> --persona <id>` for client-specific MCP setup.");
+        const cli = "npx -y github:runchr-works/intentir";
+        console.log(`Onboarding complete. Run \`${cli} workspace init\` in each repository.`);
+        console.log(`Then run \`${cli} doctor\` to verify the environment.`);
+        console.log(`Run \`${cli} agents list\` and \`${cli} agents config <agent> --persona <id>\` for client-specific MCP setup.`);
         console.log("MCP configuration:");
         console.log(JSON.stringify({
             mcpServers: {

@@ -69,7 +69,7 @@ server에 연결하는 경우에는 `uvx`가 필요하지 않습니다.
 대화형 onboarding을 실행합니다.
 
 ```bash
-npx github:runchr-works/intentir onboard
+npx -y github:runchr-works/intentir onboard
 ```
 
 다음 정보를 순서대로 입력합니다.
@@ -120,7 +120,7 @@ Hindsight는 PostgreSQL client로 직접 연결합니다.
    - 실행 환경이 IPv6를 지원하거나 IPv4 add-on이 있다면 port `5432`의 Direct connection
    - IPv4-only 환경이면 port `5432`의 Shared Pooler **Session mode**
 5. 연결 가능한 경우 migration용으로 port `5432`의 Direct connection URL을 복사합니다.
-6. `intentir onboard`에서 두 URL을 입력합니다.
+6. `npx -y github:runchr-works/intentir onboard`에서 두 URL을 입력합니다.
 
 다음 Hindsight 설정으로 저장됩니다.
 
@@ -137,7 +137,7 @@ HINDSIGHT_API_MIGRATION_DATABASE_URL=<direct migration PostgreSQL URL>
 
 ```bash
 cd /path/to/portal-api
-npx github:runchr-works/intentir workspace init --org acme --project customer-portal
+npx -y github:runchr-works/intentir workspace init --org acme --project customer-portal
 ```
 
 사용하는 MCP 클라이언트 설정에 Intentir를 추가합니다.
@@ -172,7 +172,7 @@ AuthService를 호출하는 코드와 의존 관계를 보여줘.
 GitHub 저장소에서 직접 실행:
 
 ```bash
-npx github:runchr-works/intentir
+npx -y github:runchr-works/intentir
 ```
 
 전역 설치:
@@ -182,17 +182,20 @@ npm install --global github:runchr-works/intentir
 intentir onboard
 ```
 
+짧은 `intentir ...` 형식은 전역 설치 후에만 사용할 수 있습니다. 아래 예시는 기본 빠른 시작 절차를
+따른 사용자도 실행할 수 있도록 `npx` 형식을 사용합니다.
+
 ## Workspace 명령
 
 Hindsight는 onboarding에서 한 번만 설정하며 저장소별로 초기화하지 않습니다. CodeGraph와 저장소
 identity만 workspace 단위로 관리합니다.
 
 ```bash
-intentir workspace init [path]     # identity 생성 및 codegraph init -i
-intentir workspace status [path]   # identity와 graph 상태 확인
-intentir workspace sync [path]     # CodeGraph 인덱스 갱신
-intentir workspace remove [path]   # .intentir 제거, .codegraph 보존
-intentir workspace remove --purge-graph [path]
+npx -y github:runchr-works/intentir workspace init [path]
+npx -y github:runchr-works/intentir workspace status [path]
+npx -y github:runchr-works/intentir workspace sync [path]
+npx -y github:runchr-works/intentir workspace remove [path]
+npx -y github:runchr-works/intentir workspace remove --purge-graph [path]
 ```
 
 `workspace init`을 하지 않아도 identity 환경변수를 모두 직접 설정하면 memory 도구는 사용할 수
@@ -202,17 +205,18 @@ CodeGraph 오류를 함께 반환합니다.
 설치 상태 진단:
 
 ```bash
-intentir doctor
-intentir doctor --json
+npx -y github:runchr-works/intentir doctor
+npx -y github:runchr-works/intentir doctor --json
 ```
 
 Hindsight 데이터와 저장소 인덱스를 보존하면서 전역 Intentir 설정만 제거:
 
 ```bash
-intentir uninstall
+npx -y github:runchr-works/intentir uninstall
 ```
 
-관리 중인 local pg0 데이터까지 삭제할 때만 `intentir uninstall --purge`를 사용합니다.
+관리 중인 local pg0 데이터까지 삭제할 때만
+`npx -y github:runchr-works/intentir uninstall --purge`를 사용합니다.
 
 ## 자동 기억 승격
 
@@ -300,10 +304,10 @@ Reasonix는 [DeepSeek API 문서](https://api-docs.deepseek.com/quick_start/agen
 지원 목록을 확인하거나 client별 설정을 생성할 수 있습니다.
 
 ```bash
-intentir agents list
-intentir agents config codex --persona backend-engineer --root /path/to/repo
-intentir agents config claude-code --persona backend-engineer --root /path/to/repo
-intentir agents config reasonix --persona code-reviewer --root /path/to/repo
+npx -y github:runchr-works/intentir agents list
+npx -y github:runchr-works/intentir agents config codex --persona backend-engineer --root /path/to/repo
+npx -y github:runchr-works/intentir agents config claude-code --persona backend-engineer --root /path/to/repo
+npx -y github:runchr-works/intentir agents config reasonix --persona code-reviewer --root /path/to/repo
 ```
 
 `agentId`는 client 제품명이 아니라 논리적 persona입니다. Codex와 Claude가 같은 에이전트 전용
@@ -351,7 +355,7 @@ workspace config가 없을 때만 `INTENTIR_ORG_ID`, `INTENTIR_PROJECT_ID`,
 
 - Hindsight 연결 실패: `HINDSIGHT_BASE_URL`, 인증정보, `/health` 응답을 확인합니다.
 - CodeGraph 연결 실패: `INTENTIR_REPOSITORY_ROOT`에서 `codegraph status`를 실행합니다. 인덱스가
-  없다면 `intentir workspace init`을 실행합니다.
+  없다면 `npx -y github:runchr-works/intentir workspace init`을 실행합니다.
 - 자동 승격이 동작하지 않음: `PROMOTION_LLM_API_KEY`와 `PROMOTION_LLM_MODEL`을 모두 설정합니다.
 - 승격할 기억을 찾지 못함: `memory_retain` 또는 `memory_review`가 반환한 `sourceId`를 사용하고,
   org, project, workspace, repository, agent identity가 동일한지 확인합니다.

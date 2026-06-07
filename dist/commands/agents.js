@@ -14,8 +14,9 @@ export function agentsCommand(action, args) {
         if (!requested)
             throw new Error("Usage: intentir agents config <agent> [--persona <id>] [--root <path>]");
         const agent = findAgent(requested);
-        if (!agent)
-            throw new Error(`Unsupported agent: ${requested}. Run \`intentir agents list\`.`);
+        if (!agent) {
+            throw new Error(`Unsupported agent: ${requested}. Run \`npx -y github:runchr-works/intentir agents list\`.`);
+        }
         const persona = option(args, "--persona") ?? agent.id;
         const repositoryRoot = path.resolve(option(args, "--root") ?? process.cwd());
         console.log(`# ${agent.name} (${agent.intentirTransport})`);
