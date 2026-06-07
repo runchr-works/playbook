@@ -7,7 +7,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         apiKeyRequired: true,
         defaultBaseUrl: "https://api.openai.com/v1",
         embeddingsProvider: "openai",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "anthropic",
@@ -16,7 +16,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: ["claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514"],
         apiKeyRequired: true,
         embeddingsProvider: "local",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "gemini",
@@ -25,7 +25,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: ["gemini-2.5-flash-lite", "gemini-3-pro-preview"],
         apiKeyRequired: true,
         embeddingsProvider: "gemini",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "groq",
@@ -35,7 +35,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         apiKeyRequired: true,
         defaultBaseUrl: "https://api.groq.com/openai/v1",
         embeddingsProvider: "local",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "openrouter",
@@ -45,7 +45,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         apiKeyRequired: true,
         defaultBaseUrl: "https://openrouter.ai/api/v1",
         embeddingsProvider: "openrouter",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "ollama",
@@ -55,7 +55,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         apiKeyRequired: false,
         defaultBaseUrl: "http://localhost:11434/v1",
         embeddingsProvider: "local",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "lmstudio",
@@ -65,7 +65,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         apiKeyRequired: false,
         defaultBaseUrl: "http://localhost:1234/v1",
         embeddingsProvider: "local",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "openai-codex",
@@ -74,7 +74,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: [],
         apiKeyRequired: false,
         embeddingsProvider: "openai",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
     {
         provider: "claude-code",
@@ -83,7 +83,7 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: [],
         apiKeyRequired: false,
         embeddingsProvider: "local",
-        rerankerProvider: "local",
+        rerankerProvider: "rrf",
     },
 ];
 export function recommendationFor(provider) {

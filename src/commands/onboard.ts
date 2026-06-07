@@ -116,16 +116,15 @@ export async function onboardCommand(): Promise<void> {
           `Suggested embeddings: ${rec.embeddingsProvider === "local" ? "local GPU (free, runs on your machine)" : `${rec.embeddingsProvider} cloud (uses your API key)`}`,
         );
 
-        if (rec.embeddingsProvider === "local" || rec.rerankerProvider === "local") {
+        if (rec.embeddingsProvider === "local") {
           console.log(
-            "⚠️  Local models require a compatible GPU. If you get CUDA errors, switch to CPU mode.",
+            "⚠️  Local embeddings require a compatible GPU. If you get CUDA errors, switch to CPU.",
           );
-          const useCPU = (await ask(rl, "Run local models on CPU instead of GPU? (Y/n)", "Y"))
+          const useCPU = (await ask(rl, "Run local embeddings on CPU instead of GPU? (Y/n)", "Y"))
             .toLowerCase() !== "n";
           if (useCPU) {
             env.HINDSIGHT_API_EMBEDDINGS_LOCAL_FORCE_CPU = "true";
-            env.HINDSIGHT_API_RERANKER_LOCAL_FORCE_CPU = "true";
-            console.log("Local models will use CPU.");
+            console.log("Local embeddings will use CPU.");
           }
         }
 
