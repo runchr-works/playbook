@@ -57,8 +57,11 @@ describe("workspace state", () => {
     const root = repository();
     const result = writeMcpJson(root, "my-bank", "http://localhost:8888");
     expect(result.mcpServers.hindsight).toEqual({ url: "http://localhost:8888/mcp/my-bank/" });
-    expect(result.mcpServers.codegraph).toEqual({ command: "codegraph" });
-    expect(result.mcpServers["context-mode"]).toEqual({ command: "context-mode" });
+    expect(result.mcpServers.codegraph).toEqual({
+      command: "codegraph",
+      args: ["serve", "--mcp"],
+    });
+    expect(result.mcpServers["context-mode"]).toBeUndefined();
     expect(readFileSync(path.join(root, ".mcp.json"), "utf8")).toContain('"codegraph"');
   });
 
@@ -73,6 +76,16 @@ describe("workspace state", () => {
     expect(result.mcpServers.existing).toEqual({ command: "other-tool" });
   });
 
+  it("preserves an existing project context-mode entry", () => {
+    const root = repository();
+    writeFileSync(
+      path.join(root, ".mcp.json"),
+      JSON.stringify({ mcpServers: { "context-mode": { command: "custom-context-mode" } } }),
+    );
+    const result = writeMcpJson(root, "my-bank", "http://localhost:8888");
+    expect(result.mcpServers["context-mode"]).toEqual({ command: "custom-context-mode" });
+  });
+
   it("overwrites existing tool entries on re-init", () => {
     const root = repository();
     writeFileSync(
@@ -80,6 +93,9 @@ describe("workspace state", () => {
       JSON.stringify({ mcpServers: { codegraph: { command: "old" } } }, null, 2),
     );
     const result = writeMcpJson(root, "my-bank");
-    expect(result.mcpServers.codegraph).toEqual({ command: "codegraph" });
+    expect(result.mcpServers.codegraph).toEqual({
+      command: "codegraph",
+      args: ["serve", "--mcp"],
+    });
   });
 });

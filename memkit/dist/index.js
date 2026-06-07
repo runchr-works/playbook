@@ -4,4 +4,5 @@ export * from "./workspace.js";
 export * from "./user-config.js";
 export * from "./llm-recommendations.js";
 export * from "./agents.js";
+export * from "./agent-config.js";
 //# sourceMappingURL=index.js.map

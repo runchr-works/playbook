@@ -6,6 +6,7 @@ import {
   writeWorkspaceConfig,
 } from "../workspace.js";
 import { runCommand } from "./process.js";
+import { configureProjectAgent } from "../agent-config.js";
 
 interface ParsedOptions {
   path: string;
@@ -63,9 +64,33 @@ export async function workspaceCommand(action: string | undefined, args: string[
     const { loadUserConfig } = await import("../user-config.js");
     const userConfig = loadUserConfig();
     const hindsightBaseUrl = userConfig?.env.HINDSIGHT_BASE_URL;
-    const mcpJson = writeMcpJson(input.path, bankId, hindsightBaseUrl);
+    const hindsightUrl = hindsightBaseUrl
+      ? `${hindsightBaseUrl.replace(/\/$/, "")}/mcp/${encodeURIComponent(bankId)}/`
+      : undefined;
+    const codegraphArgs = process.env.CODEGRAPH_ARGS?.split(",").filter(Boolean) ??
+      ["serve", "--mcp"];
+    const mcpJson = writeMcpJson(
+      input.path,
+      bankId,
+      hindsightBaseUrl,
+      command,
+      codegraphArgs,
+    );
     const mcpServers = Object.keys(mcpJson.mcpServers);
-    console.log(JSON.stringify({ initialized: true, mcpServers, ...config }, null, 2));
+    const agents = userConfig?.agents ?? [];
+    const agentConfigs = agents.map((agentId) =>
+      configureProjectAgent(agentId, input.path, {
+        ...(hindsightUrl ? { hindsightUrl } : {}),
+        codegraphCommand: command,
+        codegraphArgs,
+      })
+    );
+    console.log(JSON.stringify({
+      initialized: true,
+      mcpServers,
+      agents: agentConfigs,
+      ...config,
+    }, null, 2));
     return;
   }
 

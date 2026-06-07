@@ -1,8 +1,5 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input } from "node:process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { commandExists, runCommand } from "./process.js";
 import { saveUserConfig, type HindsightMode, type UserConfig } from "../user-config.js";
 import { startHindsight, waitForHindsight } from "./daemon.js";
@@ -11,6 +8,11 @@ import {
   recommendationFor,
 } from "../llm-recommendations.js";
 import { MaskedOutput } from "./masked-output.js";
+import { AGENTS } from "../agents.js";
+import {
+  configureGlobalContextMode,
+  normalizeAgentIds,
+} from "../agent-config.js";
 
 async function ask(
   rl: ReturnType<typeof createInterface>,
@@ -75,105 +77,64 @@ async function chooseHindsightLlm(
   return provider;
 }
 
-interface AgentMcpPath {
-  name: string;
-  path: string;
-  extra?: string;
+const AGENT_COMMANDS: Record<string, string[]> = {
+  codex: ["codex"],
+  "claude-code": ["claude"],
+  cursor: ["cursor-agent", "cursor"],
+  opencode: ["opencode"],
+  reasonix: ["reasonix"],
+  pi: ["pi"],
+  "gemini-cli": ["gemini"],
+  kiro: ["kiro-cli", "kiro"],
+  hermes: ["hermes"],
+};
+
+async function detectInstalledAgents(): Promise<string[]> {
+  const detected: string[] = [];
+  for (const agent of AGENTS) {
+    const commands = AGENT_COMMANDS[agent.id] ?? [];
+    for (const command of commands) {
+      if (await commandExists(command)) {
+        detected.push(agent.id);
+        break;
+      }
+    }
+  }
+  return detected;
 }
 
-function detectAgentMcpPaths(): AgentMcpPath[] {
-  const home = homedir();
-  const candidates: AgentMcpPath[] = [
-    { name: "Pi", path: join(home, ".pi", "mcp.json") },
-    { name: "Claude Code", path: join(home, ".claude", "mcp.json") },
-    { name: "Codex CLI", path: join(home, ".codex", "mcp.json") },
-    { name: "Cursor", path: join(home, ".cursor", "mcp.json") },
-    { name: "OpenCode", path: join(home, ".config", "opencode", "mcp.json") },
-    { name: "Gemini CLI", path: join(home, ".gemini", "mcp.json") },
-    { name: "Kiro", path: join(home, ".kiro", "settings", "mcp.json") },
-  ];
-  return candidates.filter((c) => existsSync(c.path));
+async function chooseAgents(rl: ReturnType<typeof createInterface>): Promise<string[]> {
+  const detected = await detectInstalledAgents();
+  console.log("\nAgent clients:");
+  AGENTS.forEach((agent, index) => {
+    console.log(`  ${index + 1}) ${agent.name}${detected.includes(agent.id) ? " (detected)" : ""}`);
+  });
+  const fallback = detected.length > 0 ? detected.join(",") : "codex";
+  const answer = await ask(
+    rl,
+    "Agents to configure (comma-separated names or numbers)",
+    fallback,
+  );
+  const values = answer.split(",").map((value) => value.trim()).filter(Boolean);
+  const expanded = values.map((value) => {
+    const index = Number(value) - 1;
+    return Number.isInteger(index) && AGENTS[index] ? AGENTS[index].id : value;
+  });
+  const selected = normalizeAgentIds(expanded);
+  if (selected.length === 0) throw new Error("No supported agents selected");
+  return selected;
 }
 
-function writeGlobalMcpEntry(agentPath: string): boolean {
-  try {
-    const raw = readFileSync(agentPath, "utf8");
-    const doc = JSON.parse(raw) as { mcpServers?: Record<string, unknown> };
-    doc.mcpServers ??= {};
-    if (doc.mcpServers["context-mode"]) return false; // already exists
-    doc.mcpServers["context-mode"] = { command: "context-mode" };
-    writeFileSync(agentPath, `${JSON.stringify(doc, null, 2)}\n`);
-    return true;
-  } catch {
-    return false;
+function configureContextMode(agents: string[]): void {
+  console.log("\nConfiguring global context-mode integration:");
+  for (const agentId of agents) {
+    const agent = AGENTS.find((candidate) => candidate.id === agentId);
+    const result = configureGlobalContextMode(agentId);
+    console.log(
+      `  ${(agent?.name ?? agentId).padEnd(18)} ${result.configured ? "configured" : result.detail}`,
+    );
   }
-}
-
-function printContextModeSetup(): void {
-  console.log("\ncontext-mode is a global MCP server — configure it once per agent.");
-  console.log("Adding it to repo .mcp.json files is unnecessary (and would be duplicated).\n");
-
-  const detected = detectAgentMcpPaths();
-  const configuredAgents: string[] = [];
-
-  if (detected.length > 0) {
-    console.log("Detected agent global MCP configs:");
-    let added = 0;
-    for (const agent of detected) {
-      const wasAdded = writeGlobalMcpEntry(agent.path);
-      const status = wasAdded ? "✓ added" : "already configured";
-      console.log(`  ${agent.name.padEnd(14)} ${agent.path}  ${status}`);
-      if (wasAdded) added++;
-      configuredAgents.push(agent.name);
-    }
-    if (added > 0) {
-      console.log(`\ncontext-mode added to ${added} agent config(s).`);
-    }
-  } else {
-    console.log("No known agent global MCP configs detected. Add context-mode manually:");
-  }
-
-  // Per-agent next steps
-  const hasPi = configuredAgents.some((n) => n === "Pi");
-  const hasClaude = configuredAgents.some((n) => n === "Claude Code");
-
-  if (hasPi || hasClaude) {
-    console.log("\n⚠️  Additional steps required for these agents:");
-    if (hasPi) {
-      console.log("  Pi: run this INSIDE Pi →  pi install npm:context-mode");
-    }
-    if (hasClaude) {
-      console.log("  Claude Code: run this INSIDE Claude Code →  /plugin install context-mode@context-mode");
-    }
-  }
-
-  if (configuredAgents.length > 0) {
-    console.log("\nRestart the agent(s) to activate context-mode.");
-  }
-
-  console.log(`
-Global MCP config — add this to your agent's global MCP settings:
-
-  {
-    "mcpServers": {
-      "context-mode": { "command": "context-mode" }
-    }
-  }
-
-Common locations:
-  Pi:          ~/.pi/mcp.json
-  Claude Code: ~/.claude/mcp.json
-  Codex CLI:   ~/.codex/mcp.json
-  Cursor:      ~/.cursor/mcp.json
-  OpenCode:    ~/.config/opencode/mcp.json
-  Gemini CLI:  ~/.gemini/mcp.json
-  Kiro:        ~/.kiro/settings/mcp.json
-
-Pi users also need:  pi install npm:context-mode  (run inside Pi)
-Claude Code users:    /plugin install context-mode@context-mode  (run inside Claude Code)
-
-Full setup: https://github.com/mksglu/context-mode#install
-`);
+  console.log("Restart configured agents to activate context-mode.");
 }
 
 export async function onboardCommand(): Promise<void> {
@@ -299,13 +260,17 @@ export async function onboardCommand(): Promise<void> {
     }
 
     if (contextModeInstalled) {
-      printContextModeSetup();
+      console.log("context-mode is configured once per agent, outside repository settings.");
     }
+
+    const agents = await chooseAgents(rl);
+    if (contextModeInstalled) configureContextMode(agents);
 
     const now = new Date().toISOString();
     const config: UserConfig = {
       version: 1,
       hindsightMode: mode,
+      agents,
       env,
       createdAt: now,
       updatedAt: now,
@@ -330,14 +295,12 @@ export async function onboardCommand(): Promise<void> {
       "Onboarding complete. Run `memkit init --bank <bank-id>` in each repository.",
     );
     console.log("Then run `memkit doctor` to verify the environment.");
-    console.log(
-      "Run `memkit agents list` and `memkit agents config <agent>` for client-specific MCP setup.",
-    );
+    console.log(`Configured agents: ${agents.join(", ")}`);
     console.log("\nYour agent connects directly to:");
     console.log("  - Hindsight (http://localhost:8888/mcp/<bank-id>/)");
     console.log("  - CodeGraph (command: codegraph)");
-    console.log("  - context-mode (command: context-mode)");
-    console.log("\nUse `memkit init --bank <bank-id>` to generate .mcp.json with these connections.");
+    console.log("  - context-mode (global agent integration)");
+    console.log("\n`memkit init` generates each selected agent's repository configuration.");
   } finally {
     rl.close();
   }

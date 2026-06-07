@@ -1,7 +1,10 @@
+import { existsSync } from "node:fs";
 import { loadUserConfig, userConfigPath } from "../user-config.js";
 import { workspaceState } from "../workspace.js";
 import { commandExists } from "./process.js";
 import { checkHindsightHealth } from "./daemon.js";
+import { projectConfigPath } from "../agent-config.js";
+import { findAgent } from "../agents.js";
 export async function doctorCommand(json = false) {
     const userConfig = loadUserConfig();
     const root = process.env.MEMKIT_REPOSITORY_ROOT ?? process.cwd();
@@ -12,8 +15,19 @@ export async function doctorCommand(json = false) {
         commandExists("context-mode"),
         checkHindsightHealth(userConfig?.env.HINDSIGHT_BASE_URL ?? "http://localhost:8888"),
     ]);
+    const agents = (userConfig?.agents ?? []).map((agentId) => {
+        const configPath = projectConfigPath(agentId, root);
+        return {
+            id: agentId,
+            name: findAgent(agentId)?.name ?? agentId,
+            automatic: Boolean(configPath),
+            path: configPath ?? null,
+            configured: configPath ? existsSync(configPath) : null,
+        };
+    });
+    const agentConfigsOk = agents.every((agent) => !agent.automatic || agent.configured);
     const report = {
-        ok: Boolean(userConfig) && hindsight.ok && codegraph && workspace.initialized,
+        ok: Boolean(userConfig) && hindsight.ok && codegraph && workspace.initialized && agentConfigsOk,
         userConfig: {
             ok: Boolean(userConfig),
             path: userConfigPath(),
@@ -21,6 +35,7 @@ export async function doctorCommand(json = false) {
         },
         hindsight: hindsight,
         dependencies: { uvx, codegraph, contextMode },
+        agents,
         workspace,
         mcpJson: workspace.config
             ? {
@@ -44,6 +59,15 @@ export async function doctorCommand(json = false) {
         console.log(`- context-mode: ${contextMode ? "available" : "missing"}`);
         console.log(`- repository: ${workspace.memkitInitialized ? "initialized" : "run memkit init --bank <bank-id>"}`);
         console.log(`- CodeGraph index: ${workspace.codegraphInitialized ? "initialized" : "missing"}`);
+        if (agents.length > 0) {
+            console.log("\nAgent project configurations:");
+            for (const agent of agents) {
+                const status = agent.automatic
+                    ? agent.configured ? "configured" : "missing; run memkit init"
+                    : "manual setup required";
+                console.log(`  ${agent.name}: ${status}${agent.path ? ` (${agent.path})` : ""}`);
+            }
+        }
         if (report.mcpJson) {
             console.log("\nMCP connections (.mcp.json):");
             console.log(`  hindsight:    ${report.mcpJson.hindsight}`);

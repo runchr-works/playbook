@@ -1,48 +1,28 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { createMcpServer } from "../dist/server.js";
+import { findAgent } from "../dist/agents.js";
+import { renderAgentConfig } from "../dist/agent-config.js";
 
-const config = {
-  identity: {
-    bankId: "smoke-bank",
-  },
-};
-const notCalled = async () => {
-  throw new Error("Smoke test should only discover tools");
-};
-const gateway = {
-  context: notCalled,
-  recall: notCalled,
-  retain: notCalled,
-  review: notCalled,
-  forget: notCalled,
-  codeSearch: notCalled,
-  codeCallers: notCalled,
-  codeCallees: notCalled,
-  codeDependencies: notCalled,
-  health: notCalled,
+const connections = {
+  hindsightUrl: "http://localhost:8888/mcp/smoke/",
+  codegraphCommand: "codegraph",
+  codegraphArgs: ["serve", "--mcp"],
 };
 
-const server = createMcpServer(config, gateway);
-const client = new Client({ name: "intentir-smoke", version: "0.1.0" });
-const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-
-try {
-  await Promise.all([
-    server.connect(serverTransport),
-    client.connect(clientTransport),
-  ]);
-  const { tools } = await client.listTools();
-  const names = tools.map((tool) => tool.name).sort();
-  if (
-    !names.includes("intent_context") ||
-    !names.includes("memory_review") ||
-    !names.includes("memory_forget") ||
-    !names.includes("code_dependencies")
-  ) {
-    throw new Error(`Expected Intentir tools, received: ${names.join(", ")}`);
-  }
-  console.log(names.join("\n"));
-} finally {
-  await Promise.all([client.close(), server.close()]);
+const codex = renderAgentConfig(findAgent("codex"), "/tmp/memkit-smoke", connections);
+if (
+  !codex.includes("[mcp_servers.hindsight]") ||
+  !codex.includes("[mcp_servers.codegraph]")
+) {
+  throw new Error(`Unexpected Codex configuration:\n${codex}`);
 }
+
+const opencode = JSON.parse(
+  renderAgentConfig(findAgent("opencode"), "/tmp/memkit-smoke", connections),
+);
+if (
+  opencode.mcp?.codegraph?.type !== "local" ||
+  opencode.mcp?.hindsight?.type !== "remote"
+) {
+  throw new Error(`Unexpected OpenCode configuration:\n${JSON.stringify(opencode)}`);
+}
+
+console.log("memkit agent configuration smoke test passed");

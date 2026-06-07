@@ -26,5 +26,5 @@ export interface McpJson {
         url: string;
     }>;
 }
-export declare function writeMcpJson(repositoryRoot: string, bankId: string, hindsightBaseUrl?: string): McpJson;
+export declare function writeMcpJson(repositoryRoot: string, bankId: string, hindsightBaseUrl?: string, codegraphCommand?: string, codegraphArgs?: string[]): McpJson;
 export declare function removeWorkspaceState(repositoryRoot: string, purgeGraph: boolean): void;

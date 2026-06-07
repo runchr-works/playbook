@@ -83,19 +83,22 @@ memkit init --bank <bank-id>
 memkit doctor
 ```
 
-After `init`, your project's `.mcp.json` is ready. Restart your agent.
+During onboarding, select every agent you use. After `init`, memkit writes each
+selected agent's native project configuration. Restart those agents.
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
 | `memkit onboard` | Install and configure Hindsight, CodeGraph, context-mode |
-| `memkit init [path] --bank <bank-id>` | Create Hindsight bank, build CodeGraph index, write `.mcp.json` |
+| `memkit init [path] --bank <bank-id>` | Create Hindsight bank, build CodeGraph index, write agent project configs |
 | `memkit doctor [--json]` | Check all tools are installed and connected |
 | `memkit workspace status` | Show workspace and CodeGraph index status |
 | `memkit workspace sync` | Sync the CodeGraph index |
 | `memkit workspace remove [--purge-graph]` | Remove workspace state |
 | `memkit agents list` | List supported agent clients |
+| `memkit agents select <agents>` | Change selected agents without repeating onboarding |
+| `memkit agents apply [path]` | Regenerate selected agent configs without rebuilding CodeGraph |
 | `memkit agents config <agent>` | Print MCP config for a specific agent |
 | `memkit uninstall [--purge]` | Remove global configuration |
 
@@ -112,13 +115,14 @@ After `init`, your project's `.mcp.json` is ready. Restart your agent.
 ## How it works
 
 1. `onboard` installs Hindsight (via uvx), CodeGraph (npm), and context-mode (npm).
-   It asks for Hindsight's LLM provider and storage backend, then starts Hindsight
-   and writes global config to `~/.config/memkit/config.json`.
+   It asks for Hindsight's LLM provider, storage backend, and the coding agents
+   you use. It stores that selection in `~/.config/memkit/config.json` and
+   configures context-mode once in each selected agent's global configuration.
 
 2. `init` creates a Hindsight memory bank, runs `codegraph init` followed by
    `codegraph index` to build a local code graph (`.codegraph/codegraph.db`),
-   and writes `.mcp.json` into your project root. No separate `codegraph init`
-   step needed.
+   then writes native project configuration for every selected agent. No
+   separate `codegraph init` step is needed.
 
 3. Your agent connects directly to each tool. No memkit runtime, no filtered
    tool list — you get all 27 Hindsight tools, full CodeGraph power, and
@@ -128,30 +132,35 @@ After `init`, your project's `.mcp.json` is ready. Restart your agent.
 
 ## Agent Setup
 
-`memkit init` creates a `.mcp.json` file that agents read to load MCP servers.
-Most agents need one extra step after `init` — check the table below:
+Agent configuration is not standardized. `memkit onboard` handles global
+context-mode integration, while `memkit init` writes repository-specific
+Hindsight and CodeGraph connections using each selected agent's native format.
 
-| Agent | Status | What to do after `memkit init` |
-|-------|--------|-------------------------------|
-| **Claude Code** | Read `.mcp.json` natively | None — just restart Claude Code |
-| **Cursor** | Read `.mcp.json` natively | None — restart Cursor or the Cursor CLI |
-| **Pi coding agent** | Needs adapter | Install `pi-mcp-adapter`: run `pi install npm:pi-mcp-adapter` and restart |
-| OpenAI Codex | Needs manual config | Copy the `mcpServers` block from `.mcp.json` into `~/.codex/config.toml` |
-| Gemini CLI | Needs manual config | Copy the `mcpServers` block into `~/.gemini/settings.json` |
-| OpenCode | Needs manual config | Copy the `mcpServers` block into `opencode.json` |
-| Reasonix | Needs manual config | Copy the `mcpServers` block into `~/.reasonix/config.json` |
-| Google Antigravity | UI-based | Paste `.mcp.json` servers in MCP Store → Manage MCP Servers → View raw config |
-| Kiro | Needs manual config | Configure MCP servers through Kiro's settings UI or config |
-| Hermes Agent | Needs manual config | Copy the `mcpServers` block into Hermes MCP configuration |
+| Agent | Repository configuration | context-mode |
+|-------|--------------------------|--------------|
+| OpenAI Codex | `.codex/config.toml` | Added to `~/.codex/config.toml` |
+| Claude Code | `.mcp.json` | Install the context-mode Claude plugin |
+| Cursor | `.cursor/mcp.json` | Added to `~/.cursor/mcp.json` |
+| Pi coding agent | `.mcp.json` through `pi-mcp-adapter` | Install the context-mode Pi package |
+| OpenCode | `opencode.json` using its native `mcp` schema | Added to global OpenCode config |
+| Gemini CLI | `.gemini/settings.json` | Added to `~/.gemini/settings.json` |
+| Reasonix | Manual until its project schema is verified | Manual |
+| Google Antigravity | MCP Store UI | Manual |
+| Kiro | Product settings or configuration | Manual |
+| Hermes Agent | Product MCP configuration | Manual |
 
-Run `memkit agents config <agent>` to print the exact JSON your agent needs.
+Existing files are merged; memkit does not replace unrelated settings. Run
+`memkit agents config <agent>` to print that agent's native configuration.
+Existing installations can run `memkit agents select codex,claude-code,opencode`
+and then `memkit agents apply` to migrate without repeating Hindsight onboarding
+or rebuilding the CodeGraph index.
 
 ## Server Management
 
 Hindsight runs as a long-lived HTTP server on `localhost:8888`. CodeGraph runs on
 demand via stdio MCP — your agent's MCP adapter spawns `codegraph serve --mcp`
-automatically when it connects. context-mode runs as a native extension inside
-Pi — no separate process to manage.
+automatically when it connects. context-mode is configured once per agent rather
+than duplicated in every repository.
 
 ### Starting Hindsight
 

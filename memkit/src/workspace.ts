@@ -81,10 +81,8 @@ export interface McpJson {
   mcpServers: Record<string, { command: string; args?: string[]; env?: Record<string, string> } | { url: string }>;
 }
 
-const MCP_SERVER_NAME = "memkit";
 const MCP_HINDSIGHT_NAME = "hindsight";
 const MCP_CODEGRAPH_NAME = "codegraph";
-const MCP_CONTEXT_MODE_NAME = "context-mode";
 
 function readMcpJson(repositoryRoot: string): McpJson | null {
   const filePath = path.join(repositoryRoot, MCP_JSON_RELATIVE_PATH);
@@ -96,7 +94,13 @@ function readMcpJson(repositoryRoot: string): McpJson | null {
   }
 }
 
-export function writeMcpJson(repositoryRoot: string, bankId: string, hindsightBaseUrl?: string): McpJson {
+export function writeMcpJson(
+  repositoryRoot: string,
+  bankId: string,
+  hindsightBaseUrl?: string,
+  codegraphCommand = "codegraph",
+  codegraphArgs = ["serve", "--mcp"],
+): McpJson {
   const root = path.resolve(repositoryRoot);
   const filePath = path.join(root, MCP_JSON_RELATIVE_PATH);
   let doc = readMcpJson(root);
@@ -109,8 +113,10 @@ export function writeMcpJson(repositoryRoot: string, bankId: string, hindsightBa
       url: `${hindsightBaseUrl.replace(/\/$/, "")}/mcp/${encodeURIComponent(bankId)}/`,
     };
   }
-  doc.mcpServers[MCP_CODEGRAPH_NAME] = { command: "codegraph" };
-  doc.mcpServers[MCP_CONTEXT_MODE_NAME] = { command: "context-mode" };
+  doc.mcpServers[MCP_CODEGRAPH_NAME] = {
+    command: codegraphCommand,
+    args: codegraphArgs,
+  };
   writeFileSync(filePath, `${JSON.stringify(doc, null, 2)}\n`);
   return doc;
 }

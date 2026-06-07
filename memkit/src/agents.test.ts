@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { AGENTS, agentConfig, findAgent } from "./agents.js";
+import { AGENTS, findAgent } from "./agents.js";
+import { renderAgentConfig } from "./agent-config.js";
 
 describe("agent integrations", () => {
   it("resolves common aliases including corrected Reasonix names", () => {
@@ -8,21 +9,31 @@ describe("agent integrations", () => {
     expect(findAgent("deepseek-reasonix")?.name).toBe("Reasonix");
   });
 
-  it("generates direct MCP connections", () => {
+  it("generates agent-native MCP configurations", () => {
     const codex = findAgent("codex");
     expect(codex).toBeDefined();
-    const config = agentConfig(codex!, "/repo");
-    const parsed = JSON.parse(config);
-    expect(parsed.mcpServers.hindsight).toBeDefined();
-    expect(parsed.mcpServers.codegraph).toBeDefined();
-    expect(parsed.mcpServers["context-mode"]).toBeDefined();
+    const config = renderAgentConfig(codex!, "/repo", {
+      hindsightUrl: "http://localhost:8888/mcp/project/",
+      codegraphCommand: "codegraph",
+      codegraphArgs: ["serve", "--mcp"],
+    });
+    expect(config).toContain("[mcp_servers.hindsight]");
+    expect(config).toContain("[mcp_servers.codegraph]");
+    expect(config).not.toContain("context-mode");
 
     const pi = findAgent("pi");
     expect(pi).toBeDefined();
-    const piConfig = agentConfig(pi!, "/repo");
+    const piConfig = renderAgentConfig(pi!, "/repo", {
+      hindsightUrl: "http://localhost:8888/mcp/project/",
+      codegraphCommand: "codegraph",
+      codegraphArgs: ["serve", "--mcp"],
+    });
     const piParsed = JSON.parse(piConfig);
     expect(piParsed.mcpServers.hindsight).toBeDefined();
-    expect(piParsed.mcpServers.codegraph).toEqual({ command: "codegraph" });
+    expect(piParsed.mcpServers.codegraph).toEqual({
+      command: "codegraph",
+      args: ["serve", "--mcp"],
+    });
   });
 
   it("uses unique canonical identifiers", () => {

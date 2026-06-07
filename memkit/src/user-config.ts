@@ -7,6 +7,7 @@ export type HindsightMode = "local" | "supabase" | "existing";
 export interface UserConfig {
   version: 1;
   hindsightMode: HindsightMode;
+  agents?: string[];
   env: Record<string, string>;
   createdAt: string;
   updatedAt: string;

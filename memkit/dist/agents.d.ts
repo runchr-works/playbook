@@ -11,4 +11,3 @@ export interface AgentDescriptor {
 }
 export declare const AGENTS: AgentDescriptor[];
 export declare function findAgent(value: string): AgentDescriptor | undefined;
-export declare function agentConfig(agent: AgentDescriptor, repositoryRoot: string): string;

@@ -54,10 +54,8 @@ export function writeWorkspaceConfig(repositoryRoot, input) {
     return config;
 }
 export const MCP_JSON_RELATIVE_PATH = ".mcp.json";
-const MCP_SERVER_NAME = "memkit";
 const MCP_HINDSIGHT_NAME = "hindsight";
 const MCP_CODEGRAPH_NAME = "codegraph";
-const MCP_CONTEXT_MODE_NAME = "context-mode";
 function readMcpJson(repositoryRoot) {
     const filePath = path.join(repositoryRoot, MCP_JSON_RELATIVE_PATH);
     if (!existsSync(filePath))
@@ -69,7 +67,7 @@ function readMcpJson(repositoryRoot) {
         return null;
     }
 }
-export function writeMcpJson(repositoryRoot, bankId, hindsightBaseUrl) {
+export function writeMcpJson(repositoryRoot, bankId, hindsightBaseUrl, codegraphCommand = "codegraph", codegraphArgs = ["serve", "--mcp"]) {
     const root = path.resolve(repositoryRoot);
     const filePath = path.join(root, MCP_JSON_RELATIVE_PATH);
     let doc = readMcpJson(root);
@@ -82,8 +80,10 @@ export function writeMcpJson(repositoryRoot, bankId, hindsightBaseUrl) {
             url: `${hindsightBaseUrl.replace(/\/$/, "")}/mcp/${encodeURIComponent(bankId)}/`,
         };
     }
-    doc.mcpServers[MCP_CODEGRAPH_NAME] = { command: "codegraph" };
-    doc.mcpServers[MCP_CONTEXT_MODE_NAME] = { command: "context-mode" };
+    doc.mcpServers[MCP_CODEGRAPH_NAME] = {
+        command: codegraphCommand,
+        args: codegraphArgs,
+    };
     writeFileSync(filePath, `${JSON.stringify(doc, null, 2)}\n`);
     return doc;
 }

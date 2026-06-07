@@ -118,30 +118,3 @@ export function findAgent(value: string): AgentDescriptor | undefined {
   const normalized = value.toLowerCase();
   return AGENTS.find((agent) => agent.id === normalized || agent.aliases.includes(normalized));
 }
-
-export function agentConfig(
-  agent: AgentDescriptor,
-  repositoryRoot: string,
-): string {
-  const connections = {
-    hindsight: {
-      url: "http://localhost:8888/mcp/<bank-id>/",
-      note: "Hindsight MCP — replace <bank-id> with your actual bank ID",
-    },
-    codegraph: {
-      command: "codegraph",
-    },
-    "context-mode": {
-      command: "context-mode",
-    },
-  };
-
-  // All agents use standard .mcp.json format
-  const config = {
-    mcpServers: connections,
-    _repositoryRoot: repositoryRoot,
-    _note: "Generate this with `memkit init --bank <bank-id>`",
-  };
-
-  return JSON.stringify(config, null, 2);
-}

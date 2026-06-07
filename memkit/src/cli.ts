@@ -65,6 +65,8 @@ Usage:
   memkit workspace sync          Sync the CodeGraph index
   memkit workspace remove        Remove memkit workspace state
   memkit agents list             List supported agent clients
+  memkit agents select <agents>  Select agents and configure global context-mode
+  memkit agents apply [path]     Write selected agents' repository configurations
   memkit agents config <agent>   Print an MCP configuration for an agent
   memkit doctor [--json]         Diagnose the installation and current workspace
   memkit uninstall [--purge]     Remove global memkit configuration
