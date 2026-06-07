@@ -256,6 +256,16 @@ journalctl --user -u intentir-hindsight.service -f
 `loginctl enable-linger "$USER"`로 lingering을 활성화합니다. Node 버전 관리자로 설치한 경로는 Node
 업그레이드 후 바뀔 수 있으므로 이 경우 `ExecStart`를 갱신해야 합니다.
 
+Linux 환경에 systemd가 없거나 WSL을 사용하는 경우에는 세션 시작 스크립트에서
+`intentir daemon run`을 띄우면 됩니다. 가장 단순한 대안은 `crontab -e`에 다음 줄을 넣는 것입니다.
+
+```cron
+@reboot /absolute/path/to/intentir daemon run >> /home/USER/.config/intentir/hindsight.log 2>&1
+```
+
+여기서도 `PATH`는 중요합니다. `uvx`와 Node가 관리하는 실행 파일을 찾을 수 있어야 합니다.
+`@reboot`가 환경상 안정적이지 않다면 셸 프로필이나 데스크톱 세션 시작 항목에서 실행하세요.
+
 ### macOS: launchd
 
 `command -v intentir`로 실행 파일의 절대 경로를 확인한 다음

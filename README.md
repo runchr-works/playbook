@@ -254,6 +254,17 @@ The user service starts when you log in. To start it before login, enable linger
 `loginctl enable-linger "$USER"` if your system permits it. Paths installed through a Node version
 manager can change after a Node upgrade; update `ExecStart` when that happens.
 
+If your Linux environment does not use systemd, or you are on WSL, run `intentir daemon run` from a
+session startup hook instead. A simple fallback is `crontab -e` with:
+
+```cron
+@reboot /absolute/path/to/intentir daemon run >> /home/USER/.config/intentir/hindsight.log 2>&1
+```
+
+Keep the same `PATH` caveat in mind: the process must be able to find `uvx` and any Node-managed
+executables. If `@reboot` is unreliable in your environment, start it from your shell profile or
+desktop session startup instead.
+
 ### macOS: launchd
 
 Find the absolute executable path with `command -v intentir`, then create
