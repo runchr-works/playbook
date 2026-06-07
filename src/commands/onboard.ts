@@ -1,5 +1,8 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input } from "node:process";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { commandExists, runCommand } from "./process.js";
 import { saveUserConfig, type HindsightMode, type UserConfig } from "../user-config.js";
 import { startHindsightDaemon, waitForHindsight } from "./daemon.js";
@@ -70,6 +73,87 @@ async function chooseHindsightLlm(
   );
   if (llmBaseUrl) env.HINDSIGHT_API_LLM_BASE_URL = llmBaseUrl;
   return provider;
+}
+
+interface AgentMcpPath {
+  name: string;
+  path: string;
+  extra?: string;
+}
+
+function detectAgentMcpPaths(): AgentMcpPath[] {
+  const home = homedir();
+  const candidates: AgentMcpPath[] = [
+    { name: "Pi", path: join(home, ".pi", "mcp.json") },
+    { name: "Claude Code", path: join(home, ".claude", "mcp.json") },
+    { name: "Codex CLI", path: join(home, ".codex", "mcp.json") },
+    { name: "Cursor", path: join(home, ".cursor", "mcp.json") },
+    { name: "OpenCode", path: join(home, ".config", "opencode", "mcp.json") },
+    { name: "Gemini CLI", path: join(home, ".gemini", "mcp.json") },
+    { name: "Kiro", path: join(home, ".kiro", "settings", "mcp.json") },
+  ];
+  return candidates.filter((c) => existsSync(c.path));
+}
+
+function writeGlobalMcpEntry(agentPath: string): boolean {
+  try {
+    const raw = readFileSync(agentPath, "utf8");
+    const doc = JSON.parse(raw) as { mcpServers?: Record<string, unknown> };
+    doc.mcpServers ??= {};
+    if (doc.mcpServers["context-mode"]) return false; // already exists
+    doc.mcpServers["context-mode"] = { command: "context-mode" };
+    writeFileSync(agentPath, `${JSON.stringify(doc, null, 2)}\n`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function printContextModeSetup(): void {
+  console.log("\ncontext-mode is a global MCP server — configure it once per agent.");
+  console.log("Adding it to repo .mcp.json files is unnecessary (and would be duplicated).\n");
+
+  const detected = detectAgentMcpPaths();
+
+  if (detected.length > 0) {
+    console.log("Detected agent global MCP configs:");
+    let added = 0;
+    for (const agent of detected) {
+      const wasAdded = writeGlobalMcpEntry(agent.path);
+      const status = wasAdded ? "✓ added" : "already configured";
+      console.log(`  ${agent.name.padEnd(14)} ${agent.path}  ${status}`);
+      if (wasAdded) added++;
+    }
+    if (added > 0) {
+      console.log(`\ncontext-mode added to ${added} agent config(s). Restart the agent(s) to activate.`);
+    }
+  } else {
+    console.log("No known agent global MCP configs detected. Add context-mode manually:");
+  }
+
+  console.log(`
+Global MCP config — add this to your agent's global MCP settings:
+
+  {
+    "mcpServers": {
+      "context-mode": { "command": "context-mode" }
+    }
+  }
+
+Common locations:
+  Pi:          ~/.pi/mcp.json
+  Claude Code: ~/.claude/mcp.json
+  Codex CLI:   ~/.codex/mcp.json
+  Cursor:      ~/.cursor/mcp.json
+  OpenCode:    ~/.config/opencode/mcp.json
+  Gemini CLI:  ~/.gemini/mcp.json
+  Kiro:        ~/.kiro/settings/mcp.json
+
+Pi users also need:  pi install npm:context-mode
+Claude Code users:    /plugin install context-mode@context-mode
+
+Full setup: https://github.com/mksglu/context-mode#install
+`);
 }
 
 export async function onboardCommand(): Promise<void> {
@@ -169,6 +253,36 @@ export async function onboardCommand(): Promise<void> {
         );
         if (result.code !== 0) throw new Error("CodeGraph installation failed");
       }
+    }
+
+    let contextModeInstalled = await commandExists("context-mode");
+    if (!contextModeInstalled) {
+      console.log(
+        "\ncontext-mode (https://github.com/mksglu/context-mode) captures session decisions,",
+      );
+      console.log(
+        "conventions, and error fixes. Intentir can promote these to shared Hindsight memory",
+      );
+      console.log(
+        "via the memory_sweep tool — letting all agents learn from each session.",
+      );
+      const installCm = (await ask(rl, "Install context-mode globally now? (Y/n)", "Y"))
+        .toLowerCase() !== "n";
+      if (installCm) {
+        const result = await runCommand(
+          "npm",
+          ["install", "--global", "context-mode"],
+          { inherit: true },
+        );
+        contextModeInstalled = result.code === 0;
+        if (!contextModeInstalled) {
+          console.log("context-mode installation skipped (you can install it later with npm install -g context-mode)");
+        }
+      }
+    }
+
+    if (contextModeInstalled) {
+      printContextModeSetup();
     }
 
     const now = new Date().toISOString();

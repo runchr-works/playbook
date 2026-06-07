@@ -1,15 +1,19 @@
 import type {
   AgentIdentity,
   CodeProvider,
+  ContextModeProvider,
   MemoryProvider,
   RecallInput,
   RetainInput,
+  SweepResult,
 } from "./types.js";
 
 export class IntentirGateway {
   constructor(
     private readonly memory: MemoryProvider,
     private readonly code: CodeProvider,
+    private readonly contextMode: ContextModeProvider | undefined,
+    private readonly repositoryRoot: string,
   ) {}
 
   async context(identity: AgentIdentity, task: string, maxTokens = 2_000): Promise<{
@@ -75,6 +79,109 @@ export class IntentirGateway {
 
   codeDependencies(symbol: string, depth?: number): Promise<unknown> {
     return this.code.dependencies(symbol, depth);
+  }
+
+  async sweep(identity: AgentIdentity): Promise<SweepResult> {
+    if (!this.contextMode) {
+      return {
+        detected: false,
+        adapter: null,
+        sessionCount: 0,
+        retained: [],
+        summary: "context-mode integration not configured",
+      };
+    }
+
+    const { detected, adapter, dir } = await this.contextMode.detect();
+    if (!detected) {
+      return {
+        detected: false,
+        adapter: null,
+        sessionCount: 0,
+        retained: [],
+        summary: "context-mode not found on this machine",
+      };
+    }
+
+    const summary = await this.contextMode.lastSession(this.repositoryRoot);
+    if (!summary) {
+      return {
+        detected: true,
+        adapter,
+        sessionCount: 0,
+        retained: [],
+        summary: `context-mode detected (${adapter}) but no recent session found for this project`,
+      };
+    }
+
+    const retained: Array<{ sourceId: string; content: string }> = [];
+    const skippedItems: string[] = [];
+
+    // Promote decisions
+    for (const decision of summary.decisions) {
+      try {
+        const result = await this.memory.retain({
+          identity,
+          content: decision,
+          context: "context-mode-sweep:decision",
+        });
+        retained.push({ sourceId: result.sourceId, content: `[decision] ${decision.slice(0, 100)}` });
+      } catch {
+        skippedItems.push(`decision: ${decision.slice(0, 80)}`);
+      }
+    }
+
+    // Promote conventions
+    for (const convention of summary.conventions) {
+      try {
+        const result = await this.memory.retain({
+          identity,
+          content: convention,
+          context: "context-mode-sweep:convention",
+        });
+        retained.push({ sourceId: result.sourceId, content: `[convention] ${convention.slice(0, 100)}` });
+      } catch {
+        skippedItems.push(`convention: ${convention.slice(0, 80)}`);
+      }
+    }
+
+    // Promote error-fix pairs
+    for (const error of summary.errors) {
+      if (!error.fix) continue;
+      const content = `Error: ${error.error}\nFix: ${error.fix}`;
+      try {
+        const result = await this.memory.retain({
+          identity,
+          content,
+          context: "context-mode-sweep:error-fix",
+        });
+        retained.push({ sourceId: result.sourceId, content: `[error-fix] ${error.error.slice(0, 80)}` });
+      } catch {
+        skippedItems.push(`error-fix: ${error.error.slice(0, 80)}`);
+      }
+    }
+
+    const summaryDesc = [
+      `context-mode adapter: ${adapter}`,
+      `session: ${summary.sessionId.slice(0, 8)}...`,
+      `events tracked: ${summary.eventCount}`,
+      `decisions found: ${summary.decisions.length}`,
+      `conventions detected: ${summary.conventions.length}`,
+      `errors captured: ${summary.errors.length}`,
+      `memories retained: ${retained.length}`,
+    ];
+
+    if (skippedItems.length > 0) {
+      summaryDesc.push(`skipped (retain failed): ${skippedItems.length}`);
+    }
+
+    return {
+      detected: true,
+      adapter,
+      sessionCount: 1,
+      retained,
+      summary: summaryDesc.join(" | "),
+    };
   }
 
   async health(): Promise<unknown> {

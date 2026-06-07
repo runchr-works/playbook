@@ -34,6 +34,64 @@ Intentir는 저장소의 모든 에이전트에게 공유된 두뇌를 제공합
 Pi, Claude Code, Cursor, Codex 등 MCP 호환 에이전트라면 무엇이든 동일한 프로젝트 지식에
 연결됩니다.
 
+```
+                         AGENTS (MCP Clients)
+     ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+     │    Pi    │  │  Claude  │  │  Cursor  │  │  Codex   │  …
+     └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
+          │              │              │              │
+          └──────────────┼──────────────┼──────────────┘
+                         │  MCP stdio  │
+                         ▼              ▼
+               ┌─────────────────────────────────┐
+               │           Intentir              │
+               │                                 │
+               │  ┌───────────────────────────┐  │
+               │  │       MCP 도구            │  │
+               │  │  memory_retain/recall     │  │
+               │  │  memory_review/forget     │  │
+               │  │  memory_sweep   ←──┐      │  │
+               │  │  code_search/callers     │  │  │
+               │  │  code_callees/deps       │  │  │
+               │  │  intent_context          │  │  │
+               │  └───────────┬──────────────┘  │  │
+               │              │                  │  │
+               │  ┌───────────┴───────────┐      │  │
+               │  │    IntentirGateway    │      │  │
+               │  └───┬───────┬───────┬──┘      │  │
+               │      │       │       │          │  │
+               └──────┼───────┼───────┼──────────┘  │
+                      │       │       │              │
+          ┌───────────┘       │       └──────────────┘
+          ▼                   ▼
+  ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐
+  │  Hindsight   │   │  CodeGraph   │   │  context-mode    │
+  │  (기억)      │   │  (코드 구조) │   │  (세션 이벤트)   │
+  │              │   │              │   │                  │
+  │  • retain    │   │  • search    │   │  • ctx_execute   │
+  │  • recall    │   │  • callers   │   │  • ctx_search    │
+  │  • review    │   │  • callees   │   │  • 세션 추적     │
+  │  • forget    │   │  • deps      │   │  • 결정 기록     │
+  │              │   │              │   │  • 컨벤션 감지   │
+  │  Supabase /  │   │  로컬        │   │  • 에러 해결     │
+  │  local pg0   │   │  SQLite      │   │                  │
+  └──────┬───────┘   └──────┬───────┘   │  로컬 SQLite     │
+         │                  │           └────────┬─────────┘
+         ▼                  ▼                    │
+   공유 기억          코드 그래프          memory_sweep
+   (영속적,           (머신별,             세션 DB를 읽어
+    멀티 에이전트)     로컬 인덱스)         Hindsight로 승격 ─┘
+```
+
+- **왼쪽 경로**: 에이전트가 프로젝트 기억을 저장하고 조회합니다. 한 에이전트가 학습하면
+  모든 에이전트가 기억합니다.
+- **중앙 경로**: 에이전트가 코드 구조 — 호출자, 피호출자, 의존 관계 — 를 최신 로컬
+  인덱스로 탐색합니다.
+- **오른쪽 경로**: [context-mode](https://github.com/mksglu/context-mode)가 세션 결정,
+  컨벤션, 에러 해결법을 캡처합니다. `memory_sweep`이 로컬 세션 DB를 읽어 의미 있는
+  인사이트를 Hindsight로 승격하여, 에이전트별 세션 이벤트를 공유 프로젝트 지식으로
+  전환합니다. context-mode는 선택 사항이며, 없어도 Intentir는 정상 동작합니다.
+
 ## 사전 준비
 
 onboarding을 실행하기 전에 다음 항목을 설치하거나 준비합니다.
@@ -419,6 +477,7 @@ evidenceRefs, createdByAgent, policyVersion
 | `memory_retain` | 설정된 Hindsight bank에 기억 저장 |
 | `memory_review` | 저장된 원문과 상태 조회 |
 | `memory_forget` | 원문과 파생 기억 삭제 |
+| `memory_sweep` | context-mode 세션을 스캔하여 중요 인사이트를 Hindsight 기억으로 승격 |
 | `code_search` | 로컬 인덱스에서 symbol 검색 |
 | `code_callers` | symbol 호출자 조회 |
 | `code_callees` | symbol이 호출하는 대상 조회 |

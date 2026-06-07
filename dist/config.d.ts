@@ -5,6 +5,10 @@ export interface IntentirConfig {
     };
     repositoryRoot: string;
     workspace: WorkspaceState;
+    contextMode: {
+        enabled: boolean;
+        sessionsDir?: string;
+    };
     hindsight: {
         baseUrl: string;
         apiKey?: string;

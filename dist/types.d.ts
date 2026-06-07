@@ -52,6 +52,44 @@ export interface MemoryProvider {
         detail?: string;
     }>;
 }
+export interface SessionEvent {
+    category: string;
+    type: string;
+    priority: number;
+    data: Record<string, unknown>;
+    createdAt: string;
+}
+export interface SessionSummary {
+    sessionId: string;
+    startedAt: string | null;
+    eventCount: number;
+    decisions: string[];
+    conventions: string[];
+    errors: Array<{
+        error: string;
+        fix: string | null;
+    }>;
+    keyFiles: string[];
+    lastPrompt: string | null;
+}
+export interface SweepResult {
+    detected: boolean;
+    adapter: string | null;
+    sessionCount: number;
+    retained: Array<{
+        sourceId: string;
+        content: string;
+    }>;
+    summary: string;
+}
+export interface ContextModeProvider {
+    detect(): Promise<{
+        detected: boolean;
+        adapter: string;
+        dir: string;
+    }>;
+    lastSession(projectHash: string): Promise<SessionSummary | null>;
+}
 export interface CodeQuery {
     query: string;
     limit?: number;

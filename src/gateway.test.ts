@@ -28,7 +28,7 @@ describe("IntentirGateway", () => {
   it("returns partial context when CodeGraph fails", async () => {
     const { memory, code } = providers();
     vi.mocked(code.context).mockRejectedValue(new Error("offline"));
-    const result = await new IntentirGateway(memory, code).context(identity, "task");
+    const result = await new IntentirGateway(memory, code, undefined, "/test/repo").context(identity, "task");
     expect(result.memory).toBeDefined();
     expect(result.code).toBeUndefined();
     expect(result.errors).toHaveLength(1);
@@ -36,7 +36,7 @@ describe("IntentirGateway", () => {
 
   it("retains directly in the configured bank", async () => {
     const { memory, code } = providers();
-    await new IntentirGateway(memory, code).retain({
+    await new IntentirGateway(memory, code, undefined, "/test/repo").retain({
       identity,
       content: "A durable project fact.",
     });
@@ -48,7 +48,7 @@ describe("IntentirGateway", () => {
 
   it("forgets directly from the configured bank", async () => {
     const { memory, code } = providers();
-    await new IntentirGateway(memory, code).forget(identity, "source-1");
+    await new IntentirGateway(memory, code, undefined, "/test/repo").forget(identity, "source-1");
     expect(memory.forget).toHaveBeenCalledWith({ identity, sourceId: "source-1" });
   });
 });

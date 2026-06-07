@@ -33,6 +33,65 @@ Intentir gives every agent in a repository a shared brain:
 Pi, Claude Code, Cursor, Codex, or any MCP-compatible agent — Intentir connects them all to the same
 project knowledge.
 
+```
+                         AGENTS (MCP Clients)
+     ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+     │    Pi    │  │  Claude  │  │  Cursor  │  │  Codex   │  …
+     └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
+          │              │              │              │
+          └──────────────┼──────────────┼──────────────┘
+                         │  MCP stdio  │
+                         ▼              ▼
+               ┌─────────────────────────────────┐
+               │           Intentir              │
+               │                                 │
+               │  ┌───────────────────────────┐  │
+               │  │       MCP Tools           │  │
+               │  │  memory_retain/recall     │  │
+               │  │  memory_review/forget     │  │
+               │  │  memory_sweep   ←──┐      │  │
+               │  │  code_search/callers     │  │  │
+               │  │  code_callees/deps       │  │  │
+               │  │  intent_context          │  │  │
+               │  └───────────┬──────────────┘  │  │
+               │              │                  │  │
+               │  ┌───────────┴───────────┐      │  │
+               │  │    IntentirGateway    │      │  │
+               │  └───┬───────┬───────┬──┘      │  │
+               │      │       │       │          │  │
+               └──────┼───────┼───────┼──────────┘  │
+                      │       │       │              │
+          ┌───────────┘       │       └──────────────┘
+          ▼                   ▼
+  ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐
+  │  Hindsight   │   │  CodeGraph   │   │  context-mode    │
+  │  (memory)    │   │  (code)      │   │  (session events)│
+  │              │   │              │   │                  │
+  │  • retain    │   │  • search    │   │  • ctx_execute   │
+  │  • recall    │   │  • callers   │   │  • ctx_search    │
+  │  • review    │   │  • callees   │   │  • session track │
+  │  • forget    │   │  • deps      │   │  • decisions     │
+  │              │   │              │   │  • conventions   │
+  │  Supabase /  │   │  Local       │   │  • error fixes   │
+  │  local pg0   │   │  SQLite      │   │                  │
+  └──────┬───────┘   └──────┬───────┘   │  Local SQLite    │
+         │                  │           └────────┬─────────┘
+         ▼                  ▼                    │
+   Shared Memory      Code Graph          memory_sweep
+   (persistent,       (per-machine,       reads sessions,
+    multi-agent)       local index)       promotes to
+                                          Hindsight ──────┘
+```
+
+- **Left path**: Agents retain and recall shared project memories. One agent learns it,
+  every agent remembers it.
+- **Center path**: Agents explore code structure — callers, callees, dependencies — through
+  a local index that stays up to date.
+- **Right path**: [context-mode](https://github.com/mksglu/context-mode) captures session
+  decisions, conventions, and error fixes. `memory_sweep` reads those local session databases
+  and promotes meaningful insights to Hindsight — turning per-agent session events into
+  shared project knowledge. context-mode is optional; Intentir works without it.
+
 ## Prerequisites
 
 Install or prepare the following before running onboarding:
@@ -420,6 +479,7 @@ These fields reflect metadata returned by Hindsight.
 | `memory_retain` | Store memory in the configured Hindsight bank |
 | `memory_review` | List retained sources and original content |
 | `memory_forget` | Delete a source and its extracted memory units |
+| `memory_sweep` | Scan context-mode sessions and promote insights to Hindsight memory |
 | `code_search` | Search local indexed symbols |
 | `code_callers` | Find callers of a symbol |
 | `code_callees` | Find callees of a symbol |

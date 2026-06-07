@@ -118,6 +118,17 @@ export function createMcpServer(
     async ({ symbol, depth }) => text(await gateway.codeDependencies(symbol, depth)),
   );
 
+  if (config.contextMode.enabled) {
+    server.registerTool(
+      "memory_sweep",
+      {
+        description:
+          "Scan context-mode session events and promote important findings (decisions, conventions, error fixes) to Hindsight memory. Requires context-mode to be installed and active for this project.",
+      },
+      async () => text(await gateway.sweep(identity)),
+    );
+  }
+
   server.registerTool(
     "intentir_health",
     { description: "Check Hindsight and CodeGraph provider health" },

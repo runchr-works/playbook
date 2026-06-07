@@ -2,6 +2,7 @@
 import { loadConfig } from "./config.js";
 import { IntentirGateway } from "./gateway.js";
 import { CodeGraphProvider, DisabledCodeProvider, } from "./providers/codegraph.js";
+import { ContextModeReader } from "./providers/context-mode.js";
 import { HindsightProvider } from "./providers/hindsight.js";
 import { startMcpServer } from "./server.js";
 import { doctorCommand } from "./commands/doctor.js";
@@ -26,7 +27,10 @@ async function runServer() {
             timeoutMs: config.codegraph.timeoutMs,
         })
         : new DisabledCodeProvider(config.workspace.reasons);
-    const gateway = new IntentirGateway(memory, code);
+    const contextMode = config.contextMode.enabled
+        ? new ContextModeReader()
+        : undefined;
+    const gateway = new IntentirGateway(memory, code, contextMode, config.repositoryRoot);
     debug("connecting MCP stdio transport");
     await startMcpServer(config, gateway);
     debug(`MCP transport connected; stdin ended=${process.stdin.readableEnded}`);

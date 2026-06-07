@@ -8,6 +8,10 @@ export interface IntentirConfig {
   };
   repositoryRoot: string;
   workspace: WorkspaceState;
+  contextMode: {
+    enabled: boolean;
+    sessionsDir?: string;
+  };
   hindsight: {
     baseUrl: string;
     apiKey?: string;
@@ -32,12 +36,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): IntentirConfig
       `Intentir repository is not initialized. Run \`intentir init --bank <bank-id>\` in ${repositoryRoot}.`,
     );
   }
+  const contextModeDir = mergedEnv.CONTEXT_MODE_DIR?.trim() || undefined;
+  const contextModeEnabled = mergedEnv.INTENTIR_CONTEXT_MODE !== "0";
+
   return {
     identity: {
       bankId: workspaceIdentity.bankId,
     },
     repositoryRoot,
     workspace,
+    contextMode: {
+      enabled: contextModeEnabled,
+      ...(contextModeDir ? { sessionsDir: contextModeDir } : {}),
+    },
     hindsight: {
       baseUrl: (mergedEnv.HINDSIGHT_BASE_URL ?? "http://localhost:8888").replace(/\/$/, ""),
       ...(mergedEnv.HINDSIGHT_API_KEY ? { apiKey: mergedEnv.HINDSIGHT_API_KEY } : {}),
