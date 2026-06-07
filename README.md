@@ -11,6 +11,28 @@ It combines [Hindsight](https://github.com/vectorize-io/hindsight) and
 - Repository code and the CodeGraph index stay on the local machine.
 - Hindsight can store shared memory in Supabase PostgreSQL.
 
+## Why Intentir
+
+Coding agents are powerful but isolated. Each conversation starts fresh — no memory of past decisions,
+no awareness of what another agent already figured out. You repeat the same context, the same
+conventions, the same "remember that..." over and over.
+
+Intentir gives every agent in a repository a shared brain:
+
+- **Shared project memory** — when one agent learns a pattern or convention, every agent remembers it.
+  Stop repeating "we use feature flags for all new endpoints" or "database migrations must be backward
+  compatible."
+- **Persistent code intelligence** — agents explore callers, callees, and dependencies across the
+  entire codebase without re-indexing every session. The code graph stays local and up-to-date.
+- **You stay in control** — review stored memories, correct mistakes, and delete what doesn't belong.
+  The agents remember what you want them to remember, not whatever hallucination slipped through.
+- **Works with your existing tools** — Intentir doesn't fork Hindsight or CodeGraph. It composes them
+  through a single MCP interface, so you get battle-tested memory and code intelligence without
+  reinventing either.
+
+Pi, Claude Code, Cursor, Codex, or any MCP-compatible agent — Intentir connects them all to the same
+project knowledge.
+
 ## Prerequisites
 
 Install or prepare the following before running onboarding:
