@@ -67,7 +67,7 @@ existing Hindsight server, `uvx` is not required.
 Install Intentir globally, verify the command, and run interactive onboarding:
 
 ```bash
-npm install --global github:runchr-works/intentir
+npm install --global --install-links=true github:runchr-works/intentir
 intentir --help
 intentir onboard
 ```

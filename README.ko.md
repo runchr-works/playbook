@@ -67,7 +67,7 @@ server에 연결하는 경우에는 `uvx`가 필요하지 않습니다.
 Intentir를 전역 설치하고 명령을 확인한 다음 대화형 onboarding을 실행합니다.
 
 ```bash
-npm install --global github:runchr-works/intentir
+npm install --global --install-links=true github:runchr-works/intentir
 intentir --help
 intentir onboard
 ```
