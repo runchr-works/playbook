@@ -14,7 +14,7 @@ export async function doctorCommand(json = false): Promise<void> {
   ]);
   const pid = hindsightPid();
   const report = {
-    ok: hindsight.ok && codegraph && (!workspace.config || workspace.initialized),
+    ok: Boolean(userConfig) && hindsight.ok && codegraph && workspace.initialized,
     userConfig: {
       ok: Boolean(userConfig),
       path: userConfigPath(),
@@ -37,7 +37,12 @@ export async function doctorCommand(json = false): Promise<void> {
     console.log(`- Hindsight: ${hindsight.ok ? "healthy" : hindsight.detail}`);
     console.log(`- uvx: ${uvx ? "available" : "missing"}`);
     console.log(`- CodeGraph: ${codegraph ? "available" : "missing"}`);
-    console.log(`- workspace: ${workspace.initialized ? "initialized" : workspace.reasons.join("; ")}`);
+    console.log(
+      `- repository: ${workspace.intentirInitialized ? "initialized" : "run intentir init --bank <bank-id>"}`,
+    );
+    console.log(
+      `- CodeGraph index: ${workspace.codegraphInitialized ? "initialized" : "missing"}`,
+    );
   }
   if (!report.ok) process.exitCode = 1;
 }

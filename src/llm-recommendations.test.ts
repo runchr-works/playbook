@@ -12,10 +12,8 @@ describe("Hindsight LLM recommendations", () => {
       .toBe(true);
   });
 
-  it("only marks providers with OpenAI-compatible endpoints as reusable", () => {
-    expect(recommendationFor("openai")).toMatchObject({ promotionCompatible: true });
-    expect(recommendationFor("groq")).toMatchObject({ promotionCompatible: true });
-    expect(recommendationFor("anthropic")).toMatchObject({ promotionCompatible: false });
-    expect(recommendationFor("gemini")).toMatchObject({ promotionCompatible: false });
+  it("returns provider defaults", () => {
+    expect(recommendationFor("openai")?.defaultModel).toBe("gpt-4o-mini");
+    expect(recommendationFor("anthropic")?.apiKeyRequired).toBe(true);
   });
 });

@@ -12,19 +12,16 @@ export function agentsCommand(action, args) {
     if (action === "config") {
         const requested = args[0];
         if (!requested)
-            throw new Error("Usage: intentir agents config <agent> [--persona <id>] [--root <path>]");
+            throw new Error("Usage: intentir agents config <agent> [--root <path>]");
         const agent = findAgent(requested);
-        if (!agent) {
-            throw new Error(`Unsupported agent: ${requested}. Run \`npx -y github:runchr-works/intentir agents list\`.`);
-        }
-        const persona = option(args, "--persona") ?? agent.id;
+        if (!agent)
+            throw new Error(`Unsupported agent: ${requested}. Run \`intentir agents list\`.`);
         const repositoryRoot = path.resolve(option(args, "--root") ?? process.cwd());
         console.log(`# ${agent.name} (${agent.intentirTransport})`);
         console.log(`# Hindsight upstream: ${agent.hindsightSupport}`);
         console.log(`# CodeGraph upstream: ${agent.codegraphSupport}`);
         console.log(`# Config: ${agent.configLocation}`);
-        console.log(`# Persona: ${persona}`);
-        console.log(agentConfig(agent, persona, repositoryRoot));
+        console.log(agentConfig(agent, repositoryRoot));
         return;
     }
     throw new Error("Usage: intentir agents <list|config>");

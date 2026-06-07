@@ -4,7 +4,6 @@ export interface LlmRecommendation {
   defaultModel: string;
   alternatives: string[];
   apiKeyRequired: boolean;
-  promotionCompatible: boolean;
   defaultBaseUrl?: string;
 }
 
@@ -15,7 +14,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "gpt-4o-mini",
     alternatives: ["gpt-5-mini", "gpt-5-nano", "gpt-4.1-mini"],
     apiKeyRequired: true,
-    promotionCompatible: true,
     defaultBaseUrl: "https://api.openai.com/v1",
   },
   {
@@ -24,7 +22,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "claude-haiku-4-5-20251001",
     alternatives: ["claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514"],
     apiKeyRequired: true,
-    promotionCompatible: false,
   },
   {
     provider: "gemini",
@@ -32,7 +29,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "gemini-2.5-flash",
     alternatives: ["gemini-2.5-flash-lite", "gemini-3-pro-preview"],
     apiKeyRequired: true,
-    promotionCompatible: false,
   },
   {
     provider: "groq",
@@ -40,7 +36,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "openai/gpt-oss-120b",
     alternatives: ["openai/gpt-oss-20b"],
     apiKeyRequired: true,
-    promotionCompatible: true,
     defaultBaseUrl: "https://api.groq.com/openai/v1",
   },
   {
@@ -49,7 +44,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "qwen/qwen3.5-9b",
     alternatives: ["anthropic/claude-sonnet-4-20250514"],
     apiKeyRequired: true,
-    promotionCompatible: true,
     defaultBaseUrl: "https://openrouter.ai/api/v1",
   },
   {
@@ -58,7 +52,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "gemma3:12b",
     alternatives: ["gpt-oss:20b"],
     apiKeyRequired: false,
-    promotionCompatible: true,
     defaultBaseUrl: "http://localhost:11434/v1",
   },
   {
@@ -67,7 +60,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "local-model",
     alternatives: [],
     apiKeyRequired: false,
-    promotionCompatible: true,
     defaultBaseUrl: "http://localhost:1234/v1",
   },
   {
@@ -76,7 +68,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "gpt-5.4-mini",
     alternatives: [],
     apiKeyRequired: false,
-    promotionCompatible: false,
   },
   {
     provider: "claude-code",
@@ -84,7 +75,6 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "claude-sonnet-4-5-20250929",
     alternatives: [],
     apiKeyRequired: false,
-    promotionCompatible: false,
   },
 ];
 

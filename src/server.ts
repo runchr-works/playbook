@@ -1,14 +1,8 @@
-import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import type { IntentirConfig } from "./config.js";
 import type { IntentirGateway } from "./gateway.js";
-import type { AgentIdentity } from "./types.js";
-
-const identitySchema = {
-  sessionId: z.string().optional().describe("Current agent session identifier"),
-};
 
 function text(value: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }] };
@@ -19,10 +13,7 @@ export function createMcpServer(
   gateway: IntentirGateway,
 ): McpServer {
   const server = new McpServer({ name: "intentir", version: "0.1.0" });
-  const identity = (sessionId?: string): AgentIdentity => ({
-    ...config.identity,
-    sessionId: sessionId ?? randomUUID(),
-  });
+  const identity = config.identity;
 
   server.registerTool(
     "intent_context",
@@ -31,26 +22,24 @@ export function createMcpServer(
       inputSchema: {
         task: z.string().min(1),
         maxTokens: z.number().int().positive().max(20_000).optional(),
-        ...identitySchema,
       },
     },
-    async ({ task, maxTokens, sessionId }) =>
-      text(await gateway.context(identity(sessionId), task, maxTokens)),
+    async ({ task, maxTokens }) =>
+      text(await gateway.context(identity, task, maxTokens)),
   );
 
   server.registerTool(
     "memory_recall",
     {
-      description: "Recall agent-private and project-shared memories",
+      description: "Recall memories from the configured Hindsight bank",
       inputSchema: {
         query: z.string().min(1),
         maxTokens: z.number().int().positive().max(20_000).optional(),
-        ...identitySchema,
       },
     },
-    async ({ query, maxTokens, sessionId }) =>
+    async ({ query, maxTokens }) =>
       text(await gateway.recall({
-        identity: identity(sessionId),
+        identity,
         query,
         ...(maxTokens ? { maxTokens } : {}),
       })),
@@ -59,93 +48,44 @@ export function createMcpServer(
   server.registerTool(
     "memory_retain",
     {
-      description: "Store a private memory and queue it for policy-controlled automatic promotion",
+      description: "Store a memory in the configured Hindsight bank",
       inputSchema: {
         content: z.string().min(1),
         context: z.string().optional(),
-        confidence: z.number().min(0).max(1).optional(),
-        freshness: z.string().datetime().optional(),
-        evidenceRefs: z.array(z.string().min(1)).optional(),
-        repositoryRevision: z.string().min(1).optional(),
-        ...identitySchema,
       },
     },
-    async ({
-      content,
-      context,
-      confidence,
-      freshness,
-      evidenceRefs,
-      repositoryRevision,
-      sessionId,
-    }) =>
+    async ({ content, context }) =>
       text(await gateway.retain({
-        identity: identity(sessionId),
+        identity,
         content,
         ...(context ? { context } : {}),
-        ...(
-          confidence !== undefined ||
-          freshness !== undefined ||
-          evidenceRefs !== undefined ||
-          repositoryRevision !== undefined
-            ? {
-                metadata: {
-                  confidence: confidence ?? 0.5,
-                  freshness: freshness ?? new Date().toISOString(),
-                  evidenceRefs: evidenceRefs ?? [],
-                  createdByAgent: config.identity.agentId,
-                  policyVersion: "gateway-normalized",
-                  repositoryRevision: repositoryRevision ?? null,
-                },
-              }
-            : {}
-        ),
       })),
-  );
-
-  server.registerTool(
-    "memory_promote",
-    {
-      description:
-        "Explicitly promote an existing private memory to project-shared memory after security checks",
-      inputSchema: {
-        sourceId: z.string().min(1).describe("sourceId returned by memory_retain"),
-        ...identitySchema,
-      },
-    },
-    async ({ sourceId, sessionId }) =>
-      text(await gateway.promote(identity(sessionId), sourceId)),
   );
 
   server.registerTool(
     "memory_review",
     {
-      description: "List retained memory sources and promotion scopes for review",
+      description: "List retained memory sources in the configured Hindsight bank",
       inputSchema: {
-        scope: z.enum(["agent-private", "project-shared", "all"]).default("project-shared"),
         query: z.string().optional(),
         limit: z.number().int().positive().max(100).optional(),
         offset: z.number().int().nonnegative().optional(),
-        ...identitySchema,
       },
     },
-    async ({ scope, query, limit, offset, sessionId }) =>
-      text(await gateway.review(identity(sessionId), scope, query, limit, offset)),
+    async ({ query, limit, offset }) =>
+      text(await gateway.review(identity, query, limit, offset)),
   );
 
   server.registerTool(
     "memory_forget",
     {
-      description:
-        "Delete a retained memory source, its extracted memory units, and any pending promotion",
+      description: "Delete a retained memory source and its extracted memory units",
       inputSchema: {
         sourceId: z.string().min(1).describe("sourceId returned by retain or review"),
-        scope: z.enum(["agent-private", "project-shared", "all"]).default("all"),
-        ...identitySchema,
       },
     },
-    async ({ sourceId, scope, sessionId }) =>
-      text(await gateway.forget(identity(sessionId), sourceId, scope)),
+    async ({ sourceId }) =>
+      text(await gateway.forget(identity, sourceId)),
   );
 
   for (const [name, description, handler] of [

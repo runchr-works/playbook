@@ -1,4 +1,3 @@
-import { createHash, randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 export const WORKSPACE_CONFIG_RELATIVE_PATH = path.join(".intentir", "config.json");
@@ -14,20 +13,27 @@ export function workspaceState(repositoryRoot) {
     }
     else {
         try {
-            config = JSON.parse(readFileSync(configPath, "utf8"));
-            if (path.resolve(config.repositoryRoot) !== root) {
-                reasons.push("workspace repository root does not match the current repository");
+            const parsed = JSON.parse(readFileSync(configPath, "utf8"));
+            if (!parsed.bankId) {
+                reasons.push("invalid .intentir/config.json");
+            }
+            else {
+                config = parsed;
             }
         }
         catch {
             reasons.push("invalid .intentir/config.json");
         }
     }
-    if (!existsSync(codegraphDatabasePath)) {
+    const intentirInitialized = Boolean(config) && reasons.length === 0;
+    const codegraphInitialized = existsSync(codegraphDatabasePath);
+    if (!codegraphInitialized) {
         reasons.push("missing .codegraph/codegraph.db");
     }
     return {
-        initialized: reasons.length === 0,
+        initialized: intentirInitialized && codegraphInitialized,
+        intentirInitialized,
+        codegraphInitialized,
         repositoryRoot: root,
         configPath,
         codegraphDatabasePath,
@@ -38,10 +44,7 @@ export function workspaceState(repositoryRoot) {
 export function writeWorkspaceConfig(repositoryRoot, input) {
     const root = path.resolve(repositoryRoot);
     const config = {
-        version: 1,
-        repositoryRoot: root,
         ...input,
-        createdAt: new Date().toISOString(),
     };
     const configPath = path.join(root, WORKSPACE_CONFIG_RELATIVE_PATH);
     mkdirSync(path.dirname(configPath), { recursive: true });
@@ -53,18 +56,5 @@ export function removeWorkspaceState(repositoryRoot, purgeGraph) {
     rmSync(path.join(root, ".intentir"), { recursive: true, force: true });
     if (purgeGraph)
         rmSync(path.join(root, ".codegraph"), { recursive: true, force: true });
-}
-export function deriveWorkspaceId(repositoryRoot) {
-    const digest = createHash("sha256").update(path.resolve(repositoryRoot)).digest("hex").slice(0, 12);
-    return `workspace-${digest}`;
-}
-export function deriveRepositoryId(remoteUrl, repositoryRoot) {
-    if (!remoteUrl)
-        return path.basename(path.resolve(repositoryRoot));
-    const cleaned = remoteUrl
-        .replace(/^git@[^:]+:/, "")
-        .replace(/^https?:\/\/[^/]+\//, "")
-        .replace(/\.git$/, "");
-    return cleaned.replace(/[^a-zA-Z0-9._/-]+/g, "-") || randomUUID();
 }
 //# sourceMappingURL=workspace.js.map

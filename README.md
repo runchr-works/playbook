@@ -6,8 +6,7 @@ Intentir gives multiple coding agents one MCP interface for shared memory and lo
 It combines [Hindsight](https://github.com/vectorize-io/hindsight) and
 [CodeGraph](https://github.com/colbymchenry/codegraph) without forking either project.
 
-- Each agent keeps private memories.
-- Useful memories can be promoted to shared project memory automatically or explicitly.
+- All agents configured for a repository use its Hindsight bank directly.
 - Users can review and remove incorrect memories.
 - Repository code and the CodeGraph index stay on the local machine.
 - Hindsight can store shared memory in Supabase PostgreSQL.
@@ -18,8 +17,8 @@ Install or prepare the following before running onboarding:
 
 | Requirement | When needed | Verify |
 | --- | --- | --- |
-| [Node.js](https://nodejs.org/) 22.5 or newer, including `npm` and `npx` | Always | `node --version && npm --version && npx --version` |
-| [Git](https://git-scm.com/) | Always; `npx github:...` and repository identity use it | `git --version` |
+| [Node.js](https://nodejs.org/) 22.5 or newer, including `npm` | Always | `node --version && npm --version` |
+| [Git](https://git-scm.com/) | Always; installation and repository identity use it | `git --version` |
 | `curl` or Windows PowerShell | Installing `uv` with the commands below | `curl --version` or `$PSVersionTable` |
 | [`uv`](https://docs.astral.sh/uv/) and `uvx` | Local pg0 or Supabase; both run Hindsight locally | `uvx --version` |
 | Hindsight URL and optional API key | Only when connecting to an existing Hindsight server | `curl <url>/health` |
@@ -55,7 +54,6 @@ Verify the minimum local toolchain before continuing:
 ```bash
 node --version
 npm --version
-npx --version
 git --version
 curl --version
 uvx --version
@@ -66,18 +64,18 @@ existing Hindsight server, `uvx` is not required.
 
 ## Quick Start
 
-Run the interactive onboarding:
+Install Intentir globally, verify the command, and run interactive onboarding:
 
 ```bash
-npx -y github:runchr-works/intentir onboard
+npm install --global github:runchr-works/intentir
+intentir --help
+intentir onboard
 ```
 
 It asks for:
 
 - Hindsight storage: embedded local pg0, Supabase PostgreSQL, or an existing server
 - Hindsight LLM provider, model, API key, and optional base URL
-- Whether automatic promotion is enabled
-- Whether promotion should reuse the Hindsight LLM
 - Whether CodeGraph should be installed globally
 
 ### LLM Provider Recommendations
@@ -100,11 +98,6 @@ Model availability changes over time. These defaults follow the
 [Hindsight models documentation](https://hindsight.vectorize.io/developer/models); the provider dashboard
 remains the source of truth for account access and pricing.
 
-Automatic promotion currently requires an OpenAI-compatible chat-completions endpoint. Onboarding offers
-LLM reuse only for compatible providers such as OpenAI, Groq, OpenRouter, Ollama, and LM Studio.
-Anthropic, Gemini, Codex subscription, and Claude Code can still power Hindsight, but automatic promotion
-needs a separate compatible endpoint.
-
 ### Supabase Setup
 
 Intentir and Hindsight do not need a Supabase API key. Do not provide an `anon`, `service_role`,
@@ -119,7 +112,7 @@ Hindsight connects as a PostgreSQL client:
    - Direct connection on port `5432` when the machine supports IPv6 or the project has IPv4 support.
    - Shared Pooler **Session mode** on port `5432` for an IPv4-only machine.
 5. Copy the Direct connection URL on port `5432` for migrations when it is reachable.
-6. Enter those values during `npx -y github:runchr-works/intentir onboard`.
+6. Enter those values during `intentir onboard`.
 
 Intentir stores them as:
 
@@ -135,8 +128,12 @@ Then initialize each repository separately:
 
 ```bash
 cd /path/to/portal-api
-npx -y github:runchr-works/intentir workspace init --org acme --project customer-portal
+intentir init --bank customer-portal
 ```
+
+The bank ID is the shared Hindsight memory boundary. Agents and computers using the same Hindsight
+backend and bank ID share project memory. Different bank IDs remain isolated. CodeGraph is still indexed
+locally on each computer.
 
 Add Intentir to your MCP client:
 
@@ -144,10 +141,8 @@ Add Intentir to your MCP client:
 {
   "mcpServers": {
     "intentir": {
-      "command": "npx",
-      "args": ["-y", "github:runchr-works/intentir"],
+      "command": "intentir",
       "env": {
-        "INTENTIR_AGENT_ID": "codex",
         "INTENTIR_REPOSITORY_ROOT": "/absolute/path/to/portal-api"
       }
     }
@@ -167,108 +162,79 @@ That memory is incorrect. Forget it.
 Show callers and dependencies of AuthService.
 ```
 
-Run directly from GitHub:
+To try Intentir without installing it globally:
 
 ```bash
 npx -y github:runchr-works/intentir
 ```
 
-Or install globally:
-
-```bash
-npm install --global github:runchr-works/intentir
-intentir onboard
-```
-
-The shorter `intentir ...` form is available only after the global install. The examples below use `npx`
-so they also work for users following the default Quick Start.
-
 ## Workspace Commands
 
-Hindsight is configured once during onboarding. It is not initialized per repository. CodeGraph and
-repository identity are managed per workspace:
+Hindsight is configured once during onboarding. Each repository must then be initialized with an explicit
+bank ID. The command stores the bank ID in `.intentir/config.json` and initializes the local CodeGraph
+index:
 
 ```bash
-npx -y github:runchr-works/intentir workspace init [path]
-npx -y github:runchr-works/intentir workspace status [path]
-npx -y github:runchr-works/intentir workspace sync [path]
-npx -y github:runchr-works/intentir workspace remove [path]
-npx -y github:runchr-works/intentir workspace remove --purge-graph [path]
+intentir init [path] --bank <bank-id>
+intentir workspace init [path] --bank <bank-id>  # alias
+intentir workspace status [path]
+intentir workspace sync [path]
+intentir workspace remove [path]
+intentir workspace remove --purge-graph [path]
 ```
 
-Without `workspace init`, memory tools can still work when all identity environment variables are supplied
-manually. Code tools return `workspace_not_initialized`, and `intent_context` returns memory with a
-CodeGraph error.
+`[path]` is optional and defaults to the current directory. `--bank` is required. Without repository
+initialization, Intentir does not expose Hindsight or CodeGraph tools for that repository. If repository
+configuration is written but CodeGraph initialization fails, Hindsight remains available and code tools
+return `workspace_not_initialized`.
 
 Run installation diagnostics:
 
 ```bash
-npx -y github:runchr-works/intentir doctor
-npx -y github:runchr-works/intentir doctor --json
+intentir doctor
+intentir doctor --json
 ```
 
 Remove global Intentir configuration while preserving Hindsight data and repository indexes:
 
 ```bash
-npx -y github:runchr-works/intentir uninstall
+intentir uninstall
 ```
 
-Use `npx -y github:runchr-works/intentir uninstall --purge` only to delete the managed local pg0 data as
-well.
-
-## Automatic Promotion
-
-`memory_retain` always stores new content in the agent-private bank first. To enable asynchronous automatic
-promotion, configure an OpenAI-compatible model:
-
-```json
-{
-  "PROMOTION_ENABLED": "true",
-  "PROMOTION_LLM_BASE_URL": "https://api.openai.com/v1",
-  "PROMOTION_LLM_API_KEY": "...",
-  "PROMOTION_LLM_MODEL": "...",
-  "PROMOTION_CONFIDENCE_THRESHOLD": "0.85"
-}
-```
-
-The worker blocks likely secrets, personal data, speculative claims, and temporary state before calling the
-model. Explicit `memory_promote` requests skip the model decision but still pass the deterministic security
-checks.
+Use `intentir uninstall --purge` only to delete the managed local pg0 data as well.
 
 ## Identity and Isolation
 
-Intentir identifies a caller through:
+Intentir uses the repository's configured Hindsight bank ID without deriving additional banks:
 
 ```text
-orgId -> projectId -> workspaceId -> repositoryId -> agentId -> sessionId
+bankId
 ```
 
-Organization, project, workspace, and repository identity normally come from
-`.intentir/config.json`, created by `workspace init`. `agentId` comes from onboarding or the MCP environment.
-`sessionId` is optional and generated per call when omitted.
+`bankId` comes from `.intentir/config.json`, created by `intentir init --bank <bank-id>`. Codex, Claude,
+Cursor, and other configured clients use that same bank. Intentir does not append repository or agent
+identifiers.
 
 ## Memory Metadata
 
 Recall results use normalized metadata:
 
 ```text
-provider, scope, bank, repository, revision, confidence, freshness,
+provider, bank, revision, confidence, freshness,
 evidenceRefs, createdByAgent, policyVersion
 ```
 
-Callers may provide `confidence`, `freshness`, `evidenceRefs`, and `repositoryRevision` when retaining
-memory. Intentir derives `createdByAgent` and `policyVersion`.
+These fields reflect metadata returned by Hindsight.
 
 ## MCP Tools
 
 | Tool | Purpose |
 | --- | --- |
 | `intent_context` | Retrieve Hindsight memory and CodeGraph context in parallel |
-| `memory_recall` | Search private and shared memory |
-| `memory_retain` | Store a private memory and optionally queue automatic promotion |
-| `memory_promote` | Explicitly promote a private memory using its `sourceId` |
-| `memory_review` | List private or shared memory sources and original content |
-| `memory_forget` | Delete a source and its extracted memory units, then cancel pending promotion |
+| `memory_recall` | Search the configured Hindsight bank |
+| `memory_retain` | Store memory in the configured Hindsight bank |
+| `memory_review` | List retained sources and original content |
+| `memory_forget` | Delete a source and its extracted memory units |
 | `code_search` | Search local indexed symbols |
 | `code_callers` | Find callers of a symbol |
 | `code_callees` | Find callees of a symbol |
@@ -303,15 +269,13 @@ claims a dedicated Reasonix integration.
 List integrations or generate a client-specific configuration:
 
 ```bash
-npx -y github:runchr-works/intentir agents list
-npx -y github:runchr-works/intentir agents config codex --persona backend-engineer --root /path/to/repo
-npx -y github:runchr-works/intentir agents config claude-code --persona backend-engineer --root /path/to/repo
-npx -y github:runchr-works/intentir agents config reasonix --persona code-reviewer --root /path/to/repo
+intentir agents list
+intentir agents config codex --root /path/to/repo
+intentir agents config claude-code --root /path/to/repo
+intentir agents config reasonix --root /path/to/repo
 ```
 
-`agentId` is a logical persona, not necessarily the client product. Use the same persona when Codex and
-Claude should share agent-private memory, or different personas when their private experience should stay
-isolated. Repository knowledge still converges in the project-shared bank.
+All configured clients for the same repository use the same bank.
 
 Upstream references:
 
@@ -322,29 +286,16 @@ Upstream references:
 
 ## Configuration
 
-Required variables:
-
-| Variable | Description |
-| --- | --- |
-| `INTENTIR_AGENT_ID` | Current agent identity |
-
-`INTENTIR_ORG_ID`, `INTENTIR_PROJECT_ID`, `INTENTIR_WORKSPACE_ID`, and `INTENTIR_REPOSITORY_ID` are required
-only when no workspace config is available.
-
 Common optional variables:
 
 | Variable | Default | Description |
 | --- | --- | --- |
 | `INTENTIR_REPOSITORY_ROOT` | Current directory | Repository containing `.codegraph` |
-| `INTENTIR_REPOSITORY_REVISION` | Empty | Commit SHA or revision recorded in memory metadata |
 | `HINDSIGHT_BASE_URL` | `http://localhost:8888` | Hindsight API URL |
 | `HINDSIGHT_API_KEY` | Empty | Hindsight bearer token |
 | `HINDSIGHT_TENANT` | `default` | Hindsight tenant |
 | `CODEGRAPH_COMMAND` | `codegraph` | CodeGraph executable |
 | `CODEGRAPH_ARGS` | `serve,--mcp` | Comma-separated CodeGraph arguments |
-| `PROMOTION_ENABLED` | `true` | Enable automatic promotion when model settings exist |
-| `PROMOTION_DATABASE_PATH` | `.intentir/outbox.db` | Local durable promotion state |
-| `PROMOTION_CONFIDENCE_THRESHOLD` | `0.85` | Minimum automatic-promotion confidence |
 
 See [.env.example](.env.example) for the complete list.
 
@@ -354,10 +305,7 @@ Run `intentir_health` first.
 
 - Hindsight unavailable: verify `HINDSIGHT_BASE_URL`, credentials, and `curl /health`.
 - CodeGraph unavailable: run `codegraph status` in `INTENTIR_REPOSITORY_ROOT`; initialize with
-  `npx -y github:runchr-works/intentir workspace init` if needed.
-- Automatic promotion inactive: set both `PROMOTION_LLM_API_KEY` and `PROMOTION_LLM_MODEL`.
-- Memory not found during promotion: use the `sourceId` returned by `memory_retain` or `memory_review` with
-  the same organization, project, workspace, repository, and agent identity.
+  `intentir init --bank <bank-id>` if needed.
 
 ## Open Source Acknowledgements
 

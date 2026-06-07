@@ -8,11 +8,10 @@ describe("agent integrations", () => {
     expect(findAgent("deepseek-reasonix")?.name).toBe("Reasonix");
   });
 
-  it("generates persona-aware configs", () => {
+  it("generates repository-aware configs", () => {
     const codex = findAgent("codex");
     expect(codex).toBeDefined();
-    const config = agentConfig(codex!, "backend-engineer", "/repo");
-    expect(config).toContain('INTENTIR_AGENT_ID = "backend-engineer"');
+    const config = agentConfig(codex!, "/repo");
     expect(config).toContain('INTENTIR_REPOSITORY_ROOT = "/repo"');
   });
 

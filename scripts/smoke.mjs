@@ -4,11 +4,7 @@ import { createMcpServer } from "../dist/server.js";
 
 const config = {
   identity: {
-    orgId: "smoke-org",
-    projectId: "smoke-project",
-    workspaceId: "smoke-workspace",
-    repositoryId: "smoke-repository",
-    agentId: "smoke-agent",
+    bankId: "smoke-bank",
   },
 };
 const notCalled = async () => {
@@ -18,7 +14,6 @@ const gateway = {
   context: notCalled,
   recall: notCalled,
   retain: notCalled,
-  promote: notCalled,
   review: notCalled,
   forget: notCalled,
   codeSearch: notCalled,

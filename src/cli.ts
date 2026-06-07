@@ -6,9 +6,6 @@ import {
   DisabledCodeProvider,
 } from "./providers/codegraph.js";
 import { HindsightProvider } from "./providers/hindsight.js";
-import { OpenAICompatiblePromotionClassifier } from "./promotion/classifier.js";
-import { PromotionOutbox } from "./promotion/outbox.js";
-import { PromotionWorker } from "./promotion/worker.js";
 import { startMcpServer } from "./server.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { onboardCommand } from "./commands/onboard.js";
@@ -33,31 +30,7 @@ async function runServer(): Promise<void> {
       })
     : new DisabledCodeProvider(config.workspace.reasons);
 
-  const outbox = new PromotionOutbox(config.promotion.databasePath);
-  let worker: PromotionWorker | undefined;
-  if (config.promotion.enabled && config.promotion.llm) {
-    const classifier = new OpenAICompatiblePromotionClassifier(config.promotion.llm);
-    worker = new PromotionWorker(
-      outbox,
-      memory,
-      classifier,
-      config.promotion.confidenceThreshold,
-      config.promotion.pollIntervalMs,
-    );
-    worker.start();
-  } else if (config.promotion.enabled) {
-    console.error(
-      "intentir: automatic promotion disabled because PROMOTION_LLM_API_KEY or PROMOTION_LLM_MODEL is missing",
-    );
-  }
-
-  const gateway = new IntentirGateway(
-    memory,
-    code,
-    outbox,
-    Boolean(config.promotion.enabled && config.promotion.llm),
-    config.repositoryRevision,
-  );
+  const gateway = new IntentirGateway(memory, code);
   debug("connecting MCP stdio transport");
   await startMcpServer(config, gateway);
   debug(`MCP transport connected; stdin ended=${process.stdin.readableEnded}`);
@@ -66,8 +39,6 @@ async function runServer(): Promise<void> {
   const shutdown = async () => {
     if (shuttingDown) return;
     shuttingDown = true;
-    await worker?.stop();
-    outbox?.close();
     await code.close();
   };
   process.once("SIGINT", () => void shutdown().finally(() => process.exit(0)));
@@ -96,6 +67,10 @@ async function main(): Promise<void> {
   }
   if (command === "onboard") {
     await onboardCommand();
+    return;
+  }
+  if (command === "init") {
+    await workspaceCommand("init", [action, ...args].filter((value): value is string => Boolean(value)));
     return;
   }
   if (command === "workspace") {
@@ -127,7 +102,10 @@ function printHelp(): void {
 Usage:
   intentir                         Start the MCP server
   intentir onboard                Configure Hindsight, LLMs, and CodeGraph
-  intentir workspace init [path]  Initialize repository identity and CodeGraph
+  intentir init [path] --bank <bank-id>
+                                  Initialize repository memory and CodeGraph
+  intentir workspace init [path] --bank <bank-id>
+                                  Alias for intentir init
   intentir workspace status       Show workspace and CodeGraph status
   intentir workspace sync         Sync the CodeGraph index
   intentir workspace remove       Remove Intentir workspace state

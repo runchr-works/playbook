@@ -133,27 +133,22 @@ export function findAgent(value: string): AgentDescriptor | undefined {
 
 export function agentConfig(
   agent: AgentDescriptor,
-  persona: string,
   repositoryRoot: string,
 ): string {
   const env = {
-    INTENTIR_AGENT_ID: persona,
     INTENTIR_REPOSITORY_ROOT: repositoryRoot,
   };
   const stdio = {
-    command: "npx",
-    args: ["-y", "github:runchr-works/intentir"],
+    command: "intentir",
     env,
   };
 
   if (agent.id === "codex") {
     return [
       "[mcp_servers.intentir]",
-      'command = "npx"',
-      'args = ["-y", "github:runchr-works/intentir"]',
+      'command = "intentir"',
       "",
       "[mcp_servers.intentir.env]",
-      `INTENTIR_AGENT_ID = ${JSON.stringify(persona)}`,
       `INTENTIR_REPOSITORY_ROOT = ${JSON.stringify(repositoryRoot)}`,
     ].join("\n");
   }
@@ -163,7 +158,7 @@ export function agentConfig(
       mcp: {
         intentir: {
           type: "local",
-          command: ["npx", "-y", "github:runchr-works/intentir"],
+          command: ["intentir"],
           enabled: true,
           environment: env,
         },

@@ -89,8 +89,6 @@ export async function onboardCommand(): Promise<void> {
       ? "supabase"
       : modeAnswer === "3" ? "existing" : "local";
     const env: Record<string, string> = {};
-    let hindsightProvider: string | undefined;
-
     if (mode === "existing") {
       env.HINDSIGHT_BASE_URL = await ask(rl, "Hindsight URL", "http://localhost:8888");
       const apiKey = await askSecret(rl, maskedOutput, "Hindsight API key (leave empty when unused)");
@@ -108,7 +106,7 @@ export async function onboardCommand(): Promise<void> {
         ].join("\n"));
       }
       env.HINDSIGHT_BASE_URL = "http://localhost:8888";
-      hindsightProvider = await chooseHindsightLlm(rl, maskedOutput, env);
+      await chooseHindsightLlm(rl, maskedOutput, env);
       if (mode === "supabase") {
         console.log(
           "Open Supabase Dashboard > your project > Connect. Use PostgreSQL connection strings, not an anon/service_role/legacy API key.",
@@ -127,45 +125,6 @@ export async function onboardCommand(): Promise<void> {
           "Supabase direct PostgreSQL URL for migrations (recommended)",
         );
         if (migrationUrl) env.HINDSIGHT_API_MIGRATION_DATABASE_URL = migrationUrl;
-      }
-    }
-
-    env.INTENTIR_AGENT_ID = await ask(rl, "Default agent ID", "default-agent");
-    const automatic = (await ask(rl, "Enable automatic memory promotion? (Y/n)", "Y"))
-      .toLowerCase() !== "n";
-    env.PROMOTION_ENABLED = String(automatic);
-    if (automatic) {
-      const recommendation = hindsightProvider
-        ? recommendationFor(hindsightProvider)
-        : undefined;
-      const canReuse = mode !== "existing" && recommendation?.promotionCompatible === true;
-      const reuse = canReuse &&
-        (await ask(rl, "Reuse the OpenAI-compatible Hindsight LLM for promotion? (Y/n)", "Y"))
-          .toLowerCase() !== "n";
-      if (reuse && recommendation) {
-        env.PROMOTION_LLM_BASE_URL =
-          env.HINDSIGHT_API_LLM_BASE_URL ??
-          recommendation.defaultBaseUrl ??
-          "https://api.openai.com/v1";
-        env.PROMOTION_LLM_API_KEY = env.HINDSIGHT_API_LLM_API_KEY ?? "";
-        env.PROMOTION_LLM_MODEL = env.HINDSIGHT_API_LLM_MODEL ?? "";
-      } else {
-        if (!canReuse) {
-          console.log(
-            "Automatic promotion uses an OpenAI-compatible endpoint, so this Hindsight provider cannot be reused directly.",
-          );
-        }
-        env.PROMOTION_LLM_BASE_URL = await ask(
-          rl,
-          "Promotion LLM base URL",
-          "https://api.openai.com/v1",
-        );
-        env.PROMOTION_LLM_API_KEY = await askSecret(
-          rl,
-          maskedOutput,
-          "Promotion LLM API key",
-        );
-        env.PROMOTION_LLM_MODEL = await ask(rl, "Promotion LLM model");
       }
     }
 
@@ -200,18 +159,18 @@ export async function onboardCommand(): Promise<void> {
         console.log(`Hindsight started with PID ${pid}.`);
       }
     }
-    const cli = "npx -y github:runchr-works/intentir";
-    console.log(`Onboarding complete. Run \`${cli} workspace init\` in each repository.`);
-    console.log(`Then run \`${cli} doctor\` to verify the environment.`);
     console.log(
-      `Run \`${cli} agents list\` and \`${cli} agents config <agent> --persona <id>\` for client-specific MCP setup.`,
+      "Onboarding complete. Run `intentir init --bank <bank-id>` in each repository.",
+    );
+    console.log("Then run `intentir doctor` to verify the environment.");
+    console.log(
+      "Run `intentir agents list` and `intentir agents config <agent>` for client-specific MCP setup.",
     );
     console.log("MCP configuration:");
     console.log(JSON.stringify({
       mcpServers: {
         intentir: {
-          command: "npx",
-          args: ["-y", "github:runchr-works/intentir"],
+          command: "intentir",
         },
       },
     }, null, 2));

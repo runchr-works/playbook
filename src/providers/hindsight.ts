@@ -1,13 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { bankId } from "../banks.js";
 import { CircuitBreaker, withTimeout } from "../resilience.js";
 import type {
   MemoryProvider,
   MemoryForgetInput,
   MemoryResult,
   MemoryReviewInput,
-  MemoryScope,
-  PromotionMethod,
   RecallInput,
   RetainInput,
   RetainResult,
@@ -77,159 +74,107 @@ export class HindsightProvider implements MemoryProvider {
   constructor(private readonly options: HindsightOptions) {}
 
   async recall(input: RecallInput): Promise<MemoryResult[]> {
-    const scopes: MemoryScope[] = ["agent-private", "project-shared"];
-    const settled = await Promise.allSettled(
-      scopes.map(async (scope) => {
-        const bank = bankId(input.identity, scope);
-        const response = await this.request<HindsightRecallResponse>(
-          `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/memories/recall`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              query: input.query,
-              budget: "mid",
-              ...(input.maxTokens ? { max_tokens: input.maxTokens } : {}),
-            }),
-          },
-        );
-        return (response.results ?? []).map((item, rank): MemoryResult => ({
-          id: item.id ?? `${bank}:${rank}`,
-          text: item.text ?? "",
-          ...(item.type ? { type: item.type } : {}),
-          context: item.context ?? null,
-          metadata: {
-            provider: "hindsight",
-            scope,
-            bank,
-            repository: input.identity.repositoryId,
-            revision: item.metadata?.repository_revision ?? null,
-            confidence: parseNumber(item.metadata?.confidence),
-            freshness: item.metadata?.freshness ?? null,
-            evidenceRefs: parseEvidenceRefs(item.metadata?.evidence_refs),
-            createdByAgent: item.metadata?.created_by_agent ?? null,
-            policyVersion: item.metadata?.policy_version ?? null,
-          },
-        }));
-      }),
-    );
-
-    const results = settled.flatMap((result) => result.status === "fulfilled" ? result.value : []);
-    if (results.length === 0 && settled.every((result) => result.status === "rejected")) {
-      throw new AggregateError(
-        settled.map((result) => result.status === "rejected" ? result.reason : undefined),
-        "All Hindsight recalls failed",
-      );
-    }
-    const seen = new Set<string>();
-    return results.filter((item) => {
-      const key = item.text.trim().toLowerCase();
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  async retain(input: RetainInput, scope: MemoryScope = "agent-private"): Promise<RetainResult> {
-    const sourceId = randomUUID();
-    return this.write(input, scope, sourceId);
-  }
-
-  promote(
-    input: RetainInput,
-    sourceId: string,
-    method: PromotionMethod = "automatic",
-  ): Promise<RetainResult> {
-    return this.write(
+    const bank = input.identity.bankId;
+    const response = await this.request<HindsightRecallResponse>(
+      `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/memories/recall`,
       {
-        ...input,
-        context: `intentir:${method}-promoted;source=${sourceId}`,
+        method: "POST",
+        body: JSON.stringify({
+          query: input.query,
+          budget: "mid",
+          ...(input.maxTokens ? { max_tokens: input.maxTokens } : {}),
+        }),
       },
-      "project-shared",
-      sourceId,
     );
+    return (response.results ?? []).map((item, rank): MemoryResult => ({
+      id: item.id ?? `${bank}:${rank}`,
+      text: item.text ?? "",
+      ...(item.type ? { type: item.type } : {}),
+      context: item.context ?? null,
+      metadata: {
+        provider: "hindsight",
+        bank,
+        revision: item.metadata?.repository_revision ?? null,
+        confidence: parseNumber(item.metadata?.confidence),
+        freshness: item.metadata?.freshness ?? null,
+        evidenceRefs: parseEvidenceRefs(item.metadata?.evidence_refs),
+        createdByAgent: item.metadata?.created_by_agent ?? null,
+        policyVersion: item.metadata?.policy_version ?? null,
+      },
+    }));
+  }
+
+  async retain(input: RetainInput): Promise<RetainResult> {
+    const sourceId = randomUUID();
+    return this.write(input, sourceId);
   }
 
   async review(input: MemoryReviewInput): Promise<unknown> {
-    const scopes: MemoryScope[] = input.scope === "all"
-      ? ["agent-private", "project-shared"]
-      : [input.scope];
+    const bank = input.identity.bankId;
     const limit = Math.max(1, Math.min(input.limit ?? 20, 100));
     const offset = Math.max(0, input.offset ?? 0);
-    const results = await Promise.all(scopes.map(async (scope) => {
-      const bank = bankId(input.identity, scope);
-      const params = new URLSearchParams({
-        limit: String(limit),
-        offset: String(offset),
-      });
-      if (input.query) params.set("q", input.query);
-      const documents = await this.request<HindsightDocumentList>(
-        `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/documents?${params}`,
+    const params = new URLSearchParams({
+      limit: String(limit),
+      offset: String(offset),
+    });
+    if (input.query) params.set("q", input.query);
+    const documents = await this.request<HindsightDocumentList>(
+      `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/documents?${params}`,
+      { method: "GET" },
+    );
+    const items = await Promise.all((documents.items ?? []).map(async (document) => {
+      const detail = await this.request<HindsightDocumentDetail>(
+        `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/documents/${encodeURIComponent(document.id)}`,
         { method: "GET" },
       );
-      const items = await Promise.all((documents.items ?? []).map(async (document) => {
-        const detail = await this.request<HindsightDocumentDetail>(
-          `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/documents/${encodeURIComponent(document.id)}`,
-          { method: "GET" },
-        );
-        return {
-          sourceId: detail.id,
-          content: detail.original_text ?? null,
-          scope,
-          bank,
-          createdAt: detail.created_at ?? document.created_at ?? null,
-          updatedAt: detail.updated_at ?? document.updated_at ?? null,
-          memoryUnitCount: detail.memory_unit_count ?? document.memory_unit_count ?? 0,
-          metadata: detail.document_metadata ?? null,
-        };
-      }));
       return {
-        scope,
+        sourceId: detail.id,
+        content: detail.original_text ?? null,
         bank,
-        items,
-        total: documents.total ?? items.length,
-        limit: documents.limit ?? limit,
-        offset: documents.offset ?? offset,
+        createdAt: detail.created_at ?? document.created_at ?? null,
+        updatedAt: detail.updated_at ?? document.updated_at ?? null,
+        memoryUnitCount: detail.memory_unit_count ?? document.memory_unit_count ?? 0,
+        metadata: detail.document_metadata ?? null,
       };
     }));
-    return { results };
+    return {
+      bank,
+      items,
+      total: documents.total ?? items.length,
+      limit: documents.limit ?? limit,
+      offset: documents.offset ?? offset,
+    };
   }
 
   async forget(input: MemoryForgetInput): Promise<unknown> {
-    const scopes: MemoryScope[] = input.scope === "all"
-      ? ["agent-private", "project-shared"]
-      : [input.scope];
-    const results = await Promise.all(scopes.map(async (scope) => {
-      const bank = bankId(input.identity, scope);
-      try {
-        const result = await this.request<{
-          success?: boolean;
-          memory_units_deleted?: number;
-        }>(
-          `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/documents/${encodeURIComponent(input.sourceId)}`,
-          { method: "DELETE" },
-        );
-        return {
-          scope,
-          bank,
-          deleted: result.success ?? true,
-          memoryUnitsDeleted: result.memory_units_deleted ?? 0,
-        };
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("Hindsight 404:")) {
-          return { scope, bank, deleted: false, memoryUnitsDeleted: 0 };
-        }
-        throw error;
+    const bank = input.identity.bankId;
+    try {
+      const result = await this.request<{
+        success?: boolean;
+        memory_units_deleted?: number;
+      }>(
+        `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/documents/${encodeURIComponent(input.sourceId)}`,
+        { method: "DELETE" },
+      );
+      return {
+        sourceId: input.sourceId,
+        bank,
+        deleted: result.success ?? true,
+        memoryUnitsDeleted: result.memory_units_deleted ?? 0,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("Hindsight 404:")) {
+        return { sourceId: input.sourceId, bank, deleted: false, memoryUnitsDeleted: 0 };
       }
-    }));
-    return { sourceId: input.sourceId, results };
+      throw error;
+    }
   }
 
   private async write(
     input: RetainInput,
-    scope: MemoryScope,
     sourceId: string,
   ): Promise<RetainResult> {
-    const bank = bankId(input.identity, scope);
+    const bank = input.identity.bankId;
     await this.request(
       `/v1/${encodeURIComponent(this.options.tenant)}/banks/${encodeURIComponent(bank)}/memories`,
       {
@@ -239,28 +184,6 @@ export class HindsightProvider implements MemoryProvider {
             content: input.content,
             document_id: sourceId,
             context: input.context ?? "intentir",
-            metadata: {
-              intentir_source_id: sourceId,
-              intentir_agent_id: input.identity.agentId,
-              intentir_project_id: input.identity.projectId,
-              intentir_workspace_id: input.identity.workspaceId,
-              intentir_repository_id: input.identity.repositoryId,
-              ...(input.identity.sessionId
-                ? { intentir_session_id: input.identity.sessionId }
-                : {}),
-              ...(input.metadata
-                ? {
-                    confidence: String(input.metadata.confidence),
-                    freshness: input.metadata.freshness,
-                    evidence_refs: JSON.stringify(input.metadata.evidenceRefs),
-                    created_by_agent: input.metadata.createdByAgent,
-                    policy_version: input.metadata.policyVersion,
-                    ...(input.metadata.repositoryRevision
-                      ? { repository_revision: input.metadata.repositoryRevision }
-                      : {}),
-                  }
-                : {}),
-            },
           }],
         }),
       },

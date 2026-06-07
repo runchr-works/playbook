@@ -3,8 +3,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  deriveRepositoryId,
-  deriveWorkspaceId,
   removeWorkspaceState,
   workspaceState,
   writeWorkspaceConfig,
@@ -26,13 +24,12 @@ describe("workspace state", () => {
   it("requires both Intentir config and CodeGraph database", () => {
     const root = repository();
     writeWorkspaceConfig(root, {
-      orgId: "org",
-      projectId: "project",
-      workspaceId: "workspace",
-      repositoryId: "repository",
+      bankId: "project",
     });
     expect(workspaceState(root)).toMatchObject({
       initialized: false,
+      intentirInitialized: true,
+      codegraphInitialized: false,
       reasons: ["missing .codegraph/codegraph.db"],
     });
 
@@ -44,10 +41,7 @@ describe("workspace state", () => {
   it("removes Intentir state and preserves graph by default", () => {
     const root = repository();
     writeWorkspaceConfig(root, {
-      orgId: "org",
-      projectId: "project",
-      workspaceId: "workspace",
-      repositoryId: "repository",
+      bankId: "project",
     });
     mkdirSync(path.join(root, ".codegraph"), { recursive: true });
     writeFileSync(path.join(root, ".codegraph", "codegraph.db"), "");
@@ -58,10 +52,4 @@ describe("workspace state", () => {
     expect(workspaceState(root).reasons).not.toContain("missing .codegraph/codegraph.db");
   });
 
-  it("derives stable workspace and repository identifiers", () => {
-    const root = repository();
-    expect(deriveWorkspaceId(root)).toBe(deriveWorkspaceId(root));
-    expect(deriveRepositoryId("git@github.com:runchr-works/intentir.git", root))
-      .toBe("runchr-works/intentir");
-  });
 });

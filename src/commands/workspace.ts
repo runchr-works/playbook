@@ -1,7 +1,5 @@
 import path from "node:path";
 import {
-  deriveRepositoryId,
-  deriveWorkspaceId,
   removeWorkspaceState,
   workspaceState,
   writeWorkspaceConfig,
@@ -10,10 +8,7 @@ import { runCommand } from "./process.js";
 
 interface ParsedOptions {
   path: string;
-  orgId?: string;
-  projectId?: string;
-  workspaceId?: string;
-  repositoryId?: string;
+  bankId?: string;
   purgeGraph: boolean;
 }
 
@@ -23,7 +18,7 @@ function option(args: string[], name: string): string | undefined {
 }
 
 function parse(args: string[]): ParsedOptions {
-  const valueOptions = new Set(["--org", "--project", "--workspace", "--repository"]);
+  const valueOptions = new Set(["--bank"]);
   let positional: string | undefined;
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -37,48 +32,32 @@ function parse(args: string[]): ParsedOptions {
       break;
     }
   }
-  const orgId = option(args, "--org");
-  const projectId = option(args, "--project");
-  const workspaceId = option(args, "--workspace");
-  const repositoryId = option(args, "--repository");
+  const bankId = option(args, "--bank");
   return {
     path: path.resolve(positional ?? process.cwd()),
-    ...(orgId ? { orgId } : {}),
-    ...(projectId ? { projectId } : {}),
-    ...(workspaceId ? { workspaceId } : {}),
-    ...(repositoryId ? { repositoryId } : {}),
+    ...(bankId ? { bankId } : {}),
     purgeGraph: args.includes("--purge-graph"),
   };
-}
-
-async function gitRemote(repositoryRoot: string): Promise<string | undefined> {
-  const result = await runCommand("git", ["remote", "get-url", "origin"], { cwd: repositoryRoot });
-  return result.code === 0 ? result.stdout.trim() : undefined;
 }
 
 export async function workspaceCommand(action: string | undefined, args: string[]): Promise<void> {
   const input = parse(args);
   if (action === "init") {
-    const orgId = input.orgId ?? process.env.INTENTIR_ORG_ID;
-    const projectId = input.projectId ?? process.env.INTENTIR_PROJECT_ID;
-    if (!orgId || !projectId) {
-      throw new Error("workspace init requires --org and --project or matching environment variables");
+    const bankId = input.bankId ?? process.env.INTENTIR_BANK_ID;
+    if (!bankId) {
+      throw new Error("intentir init requires --bank <bank-id>");
     }
-    const repositoryId = input.repositoryId ??
-      deriveRepositoryId(await gitRemote(input.path), input.path);
-    const workspaceId = input.workspaceId ?? deriveWorkspaceId(input.path);
+    const config = writeWorkspaceConfig(input.path, { bankId });
     const command = process.env.CODEGRAPH_COMMAND ?? "codegraph";
     const result = await runCommand(command, ["init", input.path, "-i"], {
       cwd: input.path,
       inherit: true,
     });
-    if (result.code !== 0) throw new Error(`CodeGraph init failed with exit code ${result.code}`);
-    const config = writeWorkspaceConfig(input.path, {
-      orgId,
-      projectId,
-      workspaceId,
-      repositoryId,
-    });
+    if (result.code !== 0) {
+      throw new Error(
+        `Intentir bank '${bankId}' was configured, but CodeGraph init failed with exit code ${result.code}`,
+      );
+    }
     console.log(JSON.stringify({ initialized: true, ...config }, null, 2));
     return;
   }

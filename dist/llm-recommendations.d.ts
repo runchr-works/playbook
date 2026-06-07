@@ -4,7 +4,6 @@ export interface LlmRecommendation {
     defaultModel: string;
     alternatives: string[];
     apiKeyRequired: boolean;
-    promotionCompatible: boolean;
     defaultBaseUrl?: string;
 }
 export declare const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[];
