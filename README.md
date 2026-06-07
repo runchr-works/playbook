@@ -15,21 +15,7 @@ best tools available. No thin proxies, no filtered features — agents connect d
 to Hindsight for memory, CodeGraph for code intelligence, and context-mode for
 session tracking.
 
-**agent-hub** handles the setup complexity so humans don't have to.
-
-## Getting Started
-
-```bash
-# Install agent-hub
-npm install -g github:runchr-works/playbook
-
-# Run onboarding
-agent-hub onboard
-
-# Initialize a repository
-cd /path/to/project
-agent-hub init --bank <bank-id>
-```
+[agent-hub](./agent-hub) handles the setup complexity so humans don't have to.
 
 ## Development
 
