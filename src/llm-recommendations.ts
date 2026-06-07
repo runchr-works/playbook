@@ -5,6 +5,10 @@ export interface LlmRecommendation {
   alternatives: string[];
   apiKeyRequired: boolean;
   defaultBaseUrl?: string;
+  /** Hindsight embeddings provider — 'local' when the LLM provider has no embeddings API */
+  embeddingsProvider: string;
+  /** Hindsight reranker provider — 'none' disables reranking (recommended for non-Cohere users) */
+  rerankerProvider: string;
 }
 
 export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
@@ -15,6 +19,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     alternatives: ["gpt-5-mini", "gpt-5-nano", "gpt-4.1-mini"],
     apiKeyRequired: true,
     defaultBaseUrl: "https://api.openai.com/v1",
+    embeddingsProvider: "openai",
+    rerankerProvider: "local",
   },
   {
     provider: "anthropic",
@@ -22,6 +28,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "claude-haiku-4-5-20251001",
     alternatives: ["claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514"],
     apiKeyRequired: true,
+    embeddingsProvider: "local",
+    rerankerProvider: "local",
   },
   {
     provider: "gemini",
@@ -29,6 +37,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "gemini-2.5-flash",
     alternatives: ["gemini-2.5-flash-lite", "gemini-3-pro-preview"],
     apiKeyRequired: true,
+    embeddingsProvider: "gemini",
+    rerankerProvider: "local",
   },
   {
     provider: "groq",
@@ -37,6 +47,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     alternatives: ["openai/gpt-oss-20b"],
     apiKeyRequired: true,
     defaultBaseUrl: "https://api.groq.com/openai/v1",
+    embeddingsProvider: "local",
+    rerankerProvider: "local",
   },
   {
     provider: "openrouter",
@@ -45,6 +57,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     alternatives: ["anthropic/claude-sonnet-4-20250514"],
     apiKeyRequired: true,
     defaultBaseUrl: "https://openrouter.ai/api/v1",
+    embeddingsProvider: "openrouter",
+    rerankerProvider: "local",
   },
   {
     provider: "ollama",
@@ -53,6 +67,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     alternatives: ["gpt-oss:20b"],
     apiKeyRequired: false,
     defaultBaseUrl: "http://localhost:11434/v1",
+    embeddingsProvider: "local",
+    rerankerProvider: "local",
   },
   {
     provider: "lmstudio",
@@ -61,6 +77,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     alternatives: [],
     apiKeyRequired: false,
     defaultBaseUrl: "http://localhost:1234/v1",
+    embeddingsProvider: "local",
+    rerankerProvider: "local",
   },
   {
     provider: "openai-codex",
@@ -68,6 +86,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "gpt-5.4-mini",
     alternatives: [],
     apiKeyRequired: false,
+    embeddingsProvider: "openai",
+    rerankerProvider: "local",
   },
   {
     provider: "claude-code",
@@ -75,6 +95,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS: LlmRecommendation[] = [
     defaultModel: "claude-sonnet-4-5-20250929",
     alternatives: [],
     apiKeyRequired: false,
+    embeddingsProvider: "local",
+    rerankerProvider: "local",
   },
 ];
 

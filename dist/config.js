@@ -20,7 +20,7 @@ export function loadConfig(env = process.env) {
             baseUrl: (mergedEnv.HINDSIGHT_BASE_URL ?? "http://localhost:8888").replace(/\/$/, ""),
             ...(mergedEnv.HINDSIGHT_API_KEY ? { apiKey: mergedEnv.HINDSIGHT_API_KEY } : {}),
             tenant: mergedEnv.HINDSIGHT_TENANT ?? "default",
-            timeoutMs: Number(mergedEnv.HINDSIGHT_TIMEOUT_MS ?? 15_000),
+            timeoutMs: Number(mergedEnv.HINDSIGHT_TIMEOUT_MS ?? 60_000),
         },
         codegraph: {
             command: mergedEnv.CODEGRAPH_COMMAND ?? "codegraph",

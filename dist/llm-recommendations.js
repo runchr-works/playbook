@@ -6,6 +6,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: ["gpt-5-mini", "gpt-5-nano", "gpt-4.1-mini"],
         apiKeyRequired: true,
         defaultBaseUrl: "https://api.openai.com/v1",
+        embeddingsProvider: "openai",
+        rerankerProvider: "local",
     },
     {
         provider: "anthropic",
@@ -13,6 +15,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         defaultModel: "claude-haiku-4-5-20251001",
         alternatives: ["claude-sonnet-4-5-20250929", "claude-sonnet-4-20250514"],
         apiKeyRequired: true,
+        embeddingsProvider: "local",
+        rerankerProvider: "local",
     },
     {
         provider: "gemini",
@@ -20,6 +24,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         defaultModel: "gemini-2.5-flash",
         alternatives: ["gemini-2.5-flash-lite", "gemini-3-pro-preview"],
         apiKeyRequired: true,
+        embeddingsProvider: "gemini",
+        rerankerProvider: "local",
     },
     {
         provider: "groq",
@@ -28,6 +34,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: ["openai/gpt-oss-20b"],
         apiKeyRequired: true,
         defaultBaseUrl: "https://api.groq.com/openai/v1",
+        embeddingsProvider: "local",
+        rerankerProvider: "local",
     },
     {
         provider: "openrouter",
@@ -36,6 +44,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: ["anthropic/claude-sonnet-4-20250514"],
         apiKeyRequired: true,
         defaultBaseUrl: "https://openrouter.ai/api/v1",
+        embeddingsProvider: "openrouter",
+        rerankerProvider: "local",
     },
     {
         provider: "ollama",
@@ -44,6 +54,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: ["gpt-oss:20b"],
         apiKeyRequired: false,
         defaultBaseUrl: "http://localhost:11434/v1",
+        embeddingsProvider: "local",
+        rerankerProvider: "local",
     },
     {
         provider: "lmstudio",
@@ -52,6 +64,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         alternatives: [],
         apiKeyRequired: false,
         defaultBaseUrl: "http://localhost:1234/v1",
+        embeddingsProvider: "local",
+        rerankerProvider: "local",
     },
     {
         provider: "openai-codex",
@@ -59,6 +73,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         defaultModel: "gpt-5.4-mini",
         alternatives: [],
         apiKeyRequired: false,
+        embeddingsProvider: "openai",
+        rerankerProvider: "local",
     },
     {
         provider: "claude-code",
@@ -66,6 +82,8 @@ export const HINDSIGHT_LLM_RECOMMENDATIONS = [
         defaultModel: "claude-sonnet-4-5-20250929",
         alternatives: [],
         apiKeyRequired: false,
+        embeddingsProvider: "local",
+        rerankerProvider: "local",
     },
 ];
 export function recommendationFor(provider) {
