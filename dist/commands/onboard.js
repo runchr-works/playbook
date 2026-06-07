@@ -77,40 +77,27 @@ export async function onboardCommand() {
             }
             env.HINDSIGHT_BASE_URL = "http://localhost:8888";
             await chooseHindsightLlm(rl, maskedOutput, env);
-            // Configure embeddings and reranker providers based on the LLM selection
+            // Suggest embeddings and reranker providers that match the LLM choice
             const rec = recommendationFor(env.HINDSIGHT_API_LLM_PROVIDER ?? "");
             if (rec) {
-                const localCount = [rec.embeddingsProvider, rec.rerankerProvider].filter((p) => p === "local").length;
-                if (localCount > 0) {
-                    console.log(`Embeddings: ${rec.embeddingsProvider}${rec.embeddingsProvider === "local" ? " (local — uses GPU)" : " (cloud)"}`);
-                    console.log(`Reranker: ${rec.rerankerProvider}${rec.rerankerProvider === "local" ? " (local — uses GPU)" : ""}`);
-                    console.log("Local embeddings/reranker use the GPU. If you encounter CUDA errors or don't have a compatible GPU,");
-                    const cpuFallback = (await ask(rl, "Force local models to use CPU? (Y/n)", "Y"))
+                console.log("\nMemory search quality depends on embeddings (text → vector) and reranker (result ordering).");
+                console.log(`Suggested embeddings: ${rec.embeddingsProvider === "local" ? "local GPU (free, runs on your machine)" : `${rec.embeddingsProvider} cloud (uses your API key)`}`);
+                if (rec.embeddingsProvider === "local" || rec.rerankerProvider === "local") {
+                    console.log("⚠️  Local models require a compatible GPU. If you get CUDA errors, switch to CPU mode.");
+                    const useCPU = (await ask(rl, "Run local models on CPU instead of GPU? (Y/n)", "Y"))
                         .toLowerCase() !== "n";
-                    if (cpuFallback) {
+                    if (useCPU) {
                         env.HINDSIGHT_API_EMBEDDINGS_LOCAL_FORCE_CPU = "true";
                         env.HINDSIGHT_API_RERANKER_LOCAL_FORCE_CPU = "true";
-                        console.log("Local models will run on CPU (slower but compatible).");
+                        console.log("Local models will use CPU.");
                     }
                 }
-                const changeEmbeddings = await ask(rl, `Use "${rec.embeddingsProvider}" for embeddings? (Y/n)`, "Y");
-                if (changeEmbeddings.toLowerCase() !== "n") {
-                    env.HINDSIGHT_API_EMBEDDINGS_PROVIDER = rec.embeddingsProvider;
-                    if (rec.embeddingsProvider === "openai") {
-                        env.HINDSIGHT_API_EMBEDDINGS_OPENAI_API_KEY =
-                            env.HINDSIGHT_API_LLM_API_KEY ?? "";
-                    }
+                env.HINDSIGHT_API_EMBEDDINGS_PROVIDER = rec.embeddingsProvider;
+                if (rec.embeddingsProvider === "openai") {
+                    env.HINDSIGHT_API_EMBEDDINGS_OPENAI_API_KEY =
+                        env.HINDSIGHT_API_LLM_API_KEY ?? "";
                 }
-                else {
-                    env.HINDSIGHT_API_EMBEDDINGS_PROVIDER = await ask(rl, "Hindsight embeddings provider (openai, gemini, local)", "local");
-                }
-                const changeReranker = await ask(rl, `Use "${rec.rerankerProvider}" for reranker? (Y/n)`, "Y");
-                if (changeReranker.toLowerCase() !== "n") {
-                    env.HINDSIGHT_API_RERANKER_PROVIDER = rec.rerankerProvider;
-                }
-                else {
-                    env.HINDSIGHT_API_RERANKER_PROVIDER = await ask(rl, "Hindsight reranker provider (local, cohere)", "local");
-                }
+                env.HINDSIGHT_API_RERANKER_PROVIDER = rec.rerankerProvider;
             }
             if (mode === "supabase") {
                 console.log("Open Supabase Dashboard > your project > Connect. Use PostgreSQL connection strings, not an anon/service_role/legacy API key.");
