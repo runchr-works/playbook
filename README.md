@@ -389,6 +389,23 @@ meaningful insights to Hindsight shared memory, where every agent can access the
 
 ---
 
+**Two paths to shared memory**
+
+Hindsight is the destination either way. You reach it via:
+
+| Path | Trigger | Strength | Limitation |
+|---|---|---|---|
+| `memory_sweep` | Heuristic extraction from context-mode sessions | Strong on structured signals (TODOs, explicit decisions, errors with fixes) | Subtle chat-based conclusions may be missed |
+| `memory_retain` ("remember this…") | You ask the agent explicitly | Preserves intent verbatim, works without context-mode | Requires deliberate invocation |
+
+The two are complementary. Use `memory_sweep` to consolidate what context-mode
+already captured; use `memory_retain` when sweep misses something you care about,
+or for any conclusion reached purely in conversation. A `retained: []` sweep
+result is not a failure — it often just means the explicit retain path is the
+right tool for that particular insight.
+
+---
+
 **Use cases: when and how to run `memory_sweep`**
 
 ##### 1. After finishing a feature or bug fix
