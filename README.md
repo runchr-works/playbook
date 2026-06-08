@@ -13,6 +13,7 @@
 |---------|-------------|
 | [makeable.me](https://makeable.me/en) | Makeable extracts the design system and recreates the visible frontend as editable React code. |
 | [designmd](https://www.designmd.supply/) | A supply of design md, generated. Drop in any public domain — get back a Google-spec DESIGN.md ready to feed an AI agent. |
+| [herdr](https://herdr.dev/) | Herdr is an agent runtime that runs inside your terminal. Keep your shell, SSH setup, fonts, and keybinds; add tmux-style persistence, mouse-native panes, blocked, working, and done agent state, and an API agents can drive. |
 
 ## Philosophy
 
