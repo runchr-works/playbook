@@ -15,6 +15,7 @@
 | [designmd](https://www.designmd.supply/) | A supply of design md, generated. Drop in any public domain — get back a Google-spec DESIGN.md ready to feed an AI agent. |
 | [herdr](https://herdr.dev/) | Herdr is an agent runtime that runs inside your terminal. Keep your shell, SSH setup, fonts, and keybinds; add tmux-style persistence, mouse-native panes, blocked, working, and done agent state, and an API agents can drive. |
 | [ui-skills](https://www.ui-skills.com/) | Skills for Design Engineers |
+| [skillui](https://skillui.vercel.app/) | Point skillui at any URL, repo, or folder. Get exact colors, fonts, spacing, components, animations, and scroll journeys packaged as a .skill file. Then open Claude Code and build the UI. |
 
 ## Philosophy
 
