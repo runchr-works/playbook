@@ -3,10 +3,15 @@
 **runchr shared monorepo** — conventions, tools, and documentation for how we build.
 
 ## What's here
-
+### Packages
 | Package | Description |
 |---------|-------------|
 | [memkit](./memkit) | One-step setup for coding agent MCP tools |
+
+### Favorites
+| Favorite | Description |
+|---------|-------------|
+| [makeable.me](https://makeable.me/en) | Makeable extracts the design system and recreates the visible frontend as editable React code. |
 
 ## Philosophy
 
