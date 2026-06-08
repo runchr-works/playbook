@@ -12,6 +12,7 @@
 | Favorite | Description |
 |---------|-------------|
 | [makeable.me](https://makeable.me/en) | Makeable extracts the design system and recreates the visible frontend as editable React code. |
+| [designmd](https://www.designmd.supply/) | A supply of design md, generated. Drop in any public domain — get back a Google-spec DESIGN.md ready to feed an AI agent. |
 
 ## Philosophy
 
