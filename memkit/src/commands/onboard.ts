@@ -13,6 +13,7 @@ import {
   configureGlobalContextMode,
   normalizeAgentIds,
 } from "../agent-config.js";
+import { injectRtkAgentInstructions } from "../rtk.js";
 
 async function ask(
   rl: ReturnType<typeof createInterface>,
@@ -263,14 +264,45 @@ export async function onboardCommand(): Promise<void> {
       console.log("context-mode is configured once per agent, outside repository settings.");
     }
 
+    let rtkAvailable = await commandExists("rtk");
+    if (!rtkAvailable) {
+      console.log(
+        "\nrtk (https://github.com/rtk) shrinks CLI output — 60-90% fewer tokens per command.",
+      );
+      console.log("It wraps git, cargo, npm, docker, jest, and 30+ other commands.");
+      const installRtk = (await ask(rl, "Install rtk globally now? (Y/n)", "Y"))
+        .toLowerCase() !== "n";
+      if (installRtk) {
+        const result = await runCommand(
+          "npm",
+          ["install", "--global", "rtk"],
+          { inherit: true },
+        );
+        rtkAvailable = result.code === 0;
+        if (!rtkAvailable) {
+          console.log("rtk installation skipped (you can install it later with npm install -g rtk)");
+        }
+      }
+    }
+
     const agents = await chooseAgents(rl);
     if (contextModeInstalled) configureContextMode(agents);
+    if (rtkAvailable) {
+      console.log("\nInjecting RTK instructions into agent configs:");
+      for (const agentId of agents) {
+        const results = injectRtkAgentInstructions(agentId);
+        for (const r of results) {
+          console.log(`  ${agentId.padEnd(18)} ${r.configured ? "injected" : r.detail}`);
+        }
+      }
+    }
 
     const now = new Date().toISOString();
     const config: UserConfig = {
       version: 1,
       hindsightMode: mode,
       agents,
+      ...(rtkAvailable ? { rtk: true } : {}),
       env,
       createdAt: now,
       updatedAt: now,
@@ -300,6 +332,7 @@ export async function onboardCommand(): Promise<void> {
     console.log("  - Hindsight (http://localhost:8888/mcp/<bank-id>/)");
     console.log("  - CodeGraph (command: codegraph)");
     console.log("  - context-mode (global agent integration)");
+    if (rtkAvailable) console.log("  - rtk (CLI command prefix)");
     console.log("\n`memkit init` generates each selected agent's repository configuration.");
   } finally {
     rl.close();

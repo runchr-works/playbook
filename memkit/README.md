@@ -2,20 +2,22 @@
 
 One-step setup CLI for MCP-powered coding agent tools.
 
-`memkit` installs and configures three tools for your coding agent — no thin proxy,
-no filtered features. Your agent connects directly to each tool's full MCP interface.
+`memkit` installs and configures four tools for your coding agent — MCP servers
+for memory, code intelligence, and session tracking, plus a CLI output optimizer.
+No thin proxy, no filtered features. Your agent connects directly to each tool.
 
 ## What it sets up
 
-| Tool | Purpose | MCP connection |
+| Tool | Purpose | Connection |
 |------|---------|---------------|
-| [Hindsight](https://github.com/vectorize-io/hindsight) | Shared memory across agents | `http://localhost:8888/mcp/<bank-id>/` |
-| [CodeGraph](https://github.com/colbymchenry/codegraph) | Local code graph index | `command: "codegraph"` |
-| [context-mode](https://github.com/mksglu/context-mode) | Session event capture | `command: "context-mode"` |
+| [Hindsight](https://github.com/vectorize-io/hindsight) | Shared memory across agents | MCP HTTP `localhost:8888/mcp/<bank-id>/` |
+| [CodeGraph](https://github.com/colbymchenry/codegraph) | Local code graph index | MCP stdio `codegraph serve --mcp` |
+| [context-mode](https://github.com/mksglu/context-mode) | Session event capture | MCP stdio `context-mode` |
+| [rtk](https://github.com/rtk) | CLI output optimizer (60-90% token savings) | CLI prefix `rtk <command>` |
 
 ## Why these tools
 
-Coding agents are powerful, but they lack three things out of the box:
+Coding agents are powerful, but they lack four things out of the box:
 
 1. **Memory** — every session starts from zero. The agent doesn't remember what you
    decided yesterday, what failed last week, or which approach worked.
@@ -23,10 +25,13 @@ Coding agents are powerful, but they lack three things out of the box:
    large codebase, or understand dependency chains, you need a graph.
 3. **Session awareness** — context windows are expensive. Without tracking what
    matters, sessions bloat with noise or lose critical decisions.
+4. **CLI output efficiency** — build logs, test failures, git diffs — agents burn
+   70-95% of their context on verbose CLI output that could be summarized.
 
-`memkit` wires up the three best-in-class tools that solve each problem — without
+`memkit` wires up the four best-in-class tools that solve each problem — without
 thin proxies, without filtered features. Your agent gets the full MCP interface
-for all three.
+for Hindsight, CodeGraph, context-mode, and RTK instructions injected directly
+into its operating configuration.
 
 ### Architecture
 
@@ -53,7 +58,9 @@ for all three.
 ```
 
 `memkit` doesn't sit in the middle — there is no runtime, no proxy, no API
-throttling. Your agent talks directly to each tool over standard MCP.
+throttling. Your agent talks directly to each MCP tool over standard protocol.
+RTK is a CLI command prefix (not an MCP server) that shrinks command output —
+memkit injects RTK usage instructions into your agent's operating config.
 
 ### Use cases
 
@@ -65,6 +72,7 @@ throttling. Your agent talks directly to each tool over standard MCP.
 | **Multi-agent workflows** | Different agents (Pi, Claude Code, Cursor) share the same Hindsight bank — one writes the plan, another implements, another reviews. |
 | **Session continuity** | context-mode auto-captures decisions, errors, and plans. Next session, the agent knows where you left off — no "let me re-read the codebase" tax. |
 | **Code review & analysis** | CodeGraph traces data flow and dependency chains. Hindsight remembers review patterns. context-mode indexes the review session for later retrieval. |
+| **Token-efficient commands** | rtk wraps git, cargo, npm, docker, jest, and 30+ other commands — 60-90% fewer tokens per output. The agent stays in context longer. |
 
 ## Quick Start
 
@@ -72,7 +80,7 @@ throttling. Your agent talks directly to each tool over standard MCP.
 # Install globally
 npm install -g github:runchr-works/playbook
 
-# Run onboarding (installs all three tools)
+# Run onboarding (installs all four tools)
 memkit onboard
 
 # Initialize a repository
@@ -90,7 +98,7 @@ selected agent's native project configuration. Restart those agents.
 
 | Command | Purpose |
 |---------|---------|
-| `memkit onboard` | Install and configure Hindsight, CodeGraph, context-mode |
+| `memkit onboard` | Install and configure Hindsight, CodeGraph, context-mode, rtk |
 | `memkit init [path] --bank <bank-id>` | Create Hindsight bank, build CodeGraph index, write agent project configs |
 | `memkit doctor [--json]` | Check all tools are installed and connected |
 | `memkit workspace status` | Show workspace and CodeGraph index status |
@@ -114,10 +122,11 @@ selected agent's native project configuration. Restart those agents.
 
 ## How it works
 
-1. `onboard` installs Hindsight (via uvx), CodeGraph (npm), and context-mode (npm).
-   It asks for Hindsight's LLM provider, storage backend, and the coding agents
-   you use. It stores that selection in `~/.config/memkit/config.json` and
-   configures context-mode once in each selected agent's global configuration.
+1. `onboard` installs Hindsight (via uvx), CodeGraph (npm), context-mode (npm),
+   and rtk (npm). It asks for Hindsight's LLM provider, storage backend, and the
+   coding agents you use. It stores that selection in `~/.config/memkit/config.json`,
+   configures context-mode once in each selected agent's global configuration,
+   and injects RTK usage instructions into each agent's operating config.
 
 2. `init` creates a Hindsight memory bank, runs `codegraph init` followed by
    `codegraph index` to build a local code graph (`.codegraph/codegraph.db`),
@@ -128,7 +137,7 @@ selected agent's native project configuration. Restart those agents.
    tool list — you get all 27 Hindsight tools, full CodeGraph power, and
    context-mode session tracking.
 
-4. `doctor` verifies all three tools are installed, running, and connected.
+4. `doctor` verifies all four tools are installed, running, and connected.
 
 ## Agent Setup
 

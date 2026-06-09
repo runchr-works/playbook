@@ -44,7 +44,7 @@ async function main() {
     if (!command || command === "serve" || command === "--mcp") {
         console.error("memkit is a setup CLI, not an MCP server.");
         console.error("Run `memkit onboard` to install and configure your MCP tools.");
-        console.error("Then your agent connects directly to Hindsight, CodeGraph, and context-mode.");
+        console.error("Then your agent connects directly to Hindsight, CodeGraph, context-mode, and rtk.");
         console.error("See `memkit help` for all commands.");
         process.exitCode = 1;
         return;

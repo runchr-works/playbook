@@ -3,6 +3,7 @@ export interface UserConfig {
     version: 1;
     hindsightMode: HindsightMode;
     agents?: string[];
+    rtk?: boolean;
     env: Record<string, string>;
     createdAt: string;
     updatedAt: string;

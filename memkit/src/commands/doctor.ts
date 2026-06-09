@@ -10,10 +10,11 @@ export async function doctorCommand(json = false): Promise<void> {
   const userConfig = loadUserConfig();
   const root = process.env.MEMKIT_REPOSITORY_ROOT ?? process.cwd();
   const workspace = workspaceState(root);
-  const [uvx, codegraph, contextMode, hindsight] = await Promise.all([
+  const [uvx, codegraph, contextMode, rtk, hindsight] = await Promise.all([
     commandExists("uvx"),
     commandExists(process.env.CODEGRAPH_COMMAND ?? "codegraph"),
     commandExists("context-mode"),
+    commandExists("rtk"),
     checkHindsightHealth(userConfig?.env.HINDSIGHT_BASE_URL ?? "http://localhost:8888"),
   ]);
   const agents = (userConfig?.agents ?? []).map((agentId) => {
@@ -35,7 +36,7 @@ export async function doctorCommand(json = false): Promise<void> {
       mode: userConfig?.hindsightMode ?? null,
     },
     hindsight: hindsight,
-    dependencies: { uvx, codegraph, contextMode },
+    dependencies: { uvx, codegraph, contextMode, rtk },
     agents,
     workspace,
     mcpJson: workspace.config
@@ -45,6 +46,7 @@ export async function doctorCommand(json = false): Promise<void> {
             : "not configured",
           codegraph: codegraph ? "codegraph (CLI)" : "missing",
           contextMode: contextMode ? "context-mode (CLI)" : "missing",
+          rtk: rtk ? "rtk (CLI)" : "missing",
         }
       : null,
   };
@@ -58,6 +60,7 @@ export async function doctorCommand(json = false): Promise<void> {
     console.log(`- uvx: ${uvx ? "available" : "missing"}`);
     console.log(`- CodeGraph: ${codegraph ? "available" : "missing"}`);
     console.log(`- context-mode: ${contextMode ? "available" : "missing"}`);
+    console.log(`- rtk: ${rtk ? "available" : "missing"}`);
     console.log(
       `- repository: ${workspace.memkitInitialized ? "initialized" : "run memkit init --bank <bank-id>"}`,
     );
@@ -78,6 +81,7 @@ export async function doctorCommand(json = false): Promise<void> {
       console.log(`  hindsight:    ${report.mcpJson.hindsight}`);
       console.log(`  codegraph:    ${report.mcpJson.codegraph}`);
       console.log(`  context-mode: ${report.mcpJson.contextMode}`);
+      console.log(`  rtk:          ${report.mcpJson.rtk}`);
     }
   }
   if (!report.ok) process.exitCode = 1;
