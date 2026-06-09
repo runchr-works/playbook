@@ -16,6 +16,7 @@
 | [herdr](https://herdr.dev/) | Herdr is an agent runtime that runs inside your terminal. Keep your shell, SSH setup, fonts, and keybinds; add tmux-style persistence, mouse-native panes, blocked, working, and done agent state, and an API agents can drive. |
 | [ui-skills](https://www.ui-skills.com/) | Skills for Design Engineers |
 | [skillui](https://skillui.vercel.app/) | Point skillui at any URL, repo, or folder. Get exact colors, fonts, spacing, components, animations, and scroll journeys packaged as a .skill file. Then open Claude Code and build the UI. |
+| [moonpi](https://github.com/galatolofederico/moonpi) | opinionated set of extensions for pi |
 
 #### Skills
 - https://github.com/garrytan/gstack
