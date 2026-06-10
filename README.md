@@ -2,13 +2,15 @@
 
 **runchr shared monorepo** — conventions, tools, and documentation for how we build.
 
-## What's here
-### Packages
+## AGENTS.md
+[AGENTS.md](./AGENTS.md)
+
+## Packages
 | Package | Description |
 |---------|-------------|
 | [memkit](./memkit) | One-step setup for coding agent MCP tools |
 
-### Favorites
+## Favorites
 | Favorite | Description |
 |---------|-------------|
 | [makeable.me](https://makeable.me/en) | Makeable extracts the design system and recreates the visible frontend as editable React code. |
@@ -16,14 +18,6 @@
 | [herdr](https://herdr.dev/) | Herdr is an agent runtime that runs inside your terminal. Keep your shell, SSH setup, fonts, and keybinds; add tmux-style persistence, mouse-native panes, blocked, working, and done agent state, and an API agents can drive. |
 | [ui-skills](https://www.ui-skills.com/) | Skills for Design Engineers |
 | [skillui](https://skillui.vercel.app/) | Point skillui at any URL, repo, or folder. Get exact colors, fonts, spacing, components, animations, and scroll journeys packaged as a .skill file. Then open Claude Code and build the UI. |
-| [moonpi](https://github.com/galatolofederico/moonpi) | opinionated set of extensions for pi |
-
-#### Skills
-- https://github.com/garrytan/gstack
-- http://github.com/obra/superpowers
-- http://github.com/EveryInc/compound-engineering-plugin
-
-## Tips
 
 ## Philosophy
 
