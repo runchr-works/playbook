@@ -162,6 +162,12 @@ When the user corrects your approach, append a one-line rule here before ending 
 ```
 
 ## package 설치
+### pi-skillful
+필요한 스킬만 프롬프트에 노출해서 토큰 아끼고 모델 집중력을 높이는 도구
+```
+pi install npm:pi-skillful
+```
+
 ### pi-intercom
 같은 머신 내 Pi 세션 간에 1:1 직접 메시징이 가능
 ```
