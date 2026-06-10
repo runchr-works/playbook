@@ -35,6 +35,7 @@
 - https://pi.dev/packages/context-mode
 - https://pi.dev/packages/pi-observational-memory
 - https://pi.dev/packages/pi-bar
+- https://pi.dev/packages/pi-hermes-memory
 
 ## Philosophy
 
