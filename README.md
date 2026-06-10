@@ -23,6 +23,19 @@
 - http://github.com/obra/superpowers
 - http://github.com/EveryInc/compound-engineering-plugin
 
+## Tips
+### Pi mono
+- https://pi.dev/packages/pi-intercom
+- https://pi.dev/packages/pi-subagents
+- https://pi.dev/packages/pi-web-access
+- https://pi.dev/packages/pi-lens
+- https://pi.dev/packages/@juicesharp/rpiv-ask-user-question
+- https://pi.dev/packages/@juicesharp/rpiv-todo
+- https://pi.dev/packages/pi-mcp-adapter
+- https://pi.dev/packages/context-mode
+- https://pi.dev/packages/pi-observational-memory
+- https://pi.dev/packages/pi-bar
+
 ## Philosophy
 
 We build products. Along the way, we find tools, patterns, and conventions that
