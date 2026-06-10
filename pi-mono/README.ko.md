@@ -13,10 +13,8 @@ Drop-in operating instructions for coding agents. Read this file before every ta
 
 This file follows the [AGENTS.md](https://agents.md) open standard (Linux Foundation / Agentic AI Foundation). Claude Code, Codex, Cursor, Windsurf, Copilot, Aider, Devin, Amp read it natively. For tools that look elsewhere, symlink:
 
-```bash
 ln -s AGENTS.md CLAUDE.md
 ln -s AGENTS.md GEMINI.md
-```
 
 ---
 
