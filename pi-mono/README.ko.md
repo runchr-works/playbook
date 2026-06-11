@@ -9,12 +9,6 @@ https://pi.dev/에 접속해서 원하는 방식으로 설치한다.
 pi install npm:pi-intercom
 ```
 
-### pi-subagents
-pi-subagents를 사용하면 특정 작업에 집중하는 하위 에이전트에 작업을 위임 할 수 있음. 코드 검토, 탐색, 구현, 병렬 감사, 워크플로우, 백그라운드 작업 등
-```
-pi install npm:pi-subagents
-```
-
 ### pi-web-access
 Pi 에이전트용 웹 검색, 콘텐츠 추출 및 비디오 이해 기능을 제공.
 ```
