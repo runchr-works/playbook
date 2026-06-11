@@ -3,12 +3,6 @@
 https://pi.dev/에 접속해서 원하는 방식으로 설치한다.
 
 ## package 설치
-### pi-skillful
-필요한 스킬만 프롬프트에 노출해서 토큰 아끼고 모델 집중력을 높이는 도구
-```
-pi install npm:pi-skillful
-```
-
 ### pi-intercom
 같은 머신 내 Pi 세션 간에 1:1 직접 메시징이 가능
 ```
@@ -57,12 +51,6 @@ pi install npm:pi-mcp-adapter
 pi install npm:context-mode
 ```
 
-### pi-observational-memory
-Pi 세션이 끝없이 이어지는 것처럼 느껴지도록 세션이 길어지더라도 에이전트가 작업 흐름을 놓치지 않게 도와줌
-```
-pi install npm:pi-observational-memory
-```
-
 ### gentle-engram
 기본적으로 로컬에 저장되고, 필요할 때는 클라우드에 저장하며, 모든 에이전트에서 검색할 수 있도록 도와주는 영구 메모리.
 ```
@@ -91,8 +79,8 @@ pi install npm:@vndv/pi-codegraph@0.1.7
 pi
 ```
 
-### gentle-pi
-Pi를 강력한 코딩 도구에서 제어 가능한 개발 도구로 전환시킴
+### rpiv-pi
+Pi Agent를 위한 스킬 기반 개발 워크플로. 다섯 가지 스킬(연구, 설계, 계획, 구현, 검증)과 이를 구성하는 공유 하위 에이전트들을 보여줌.
 ```
-pi install npm:gentle-pi
+pi install npm:@juicesharp/rpiv-pi
 ```
