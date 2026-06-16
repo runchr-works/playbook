@@ -67,8 +67,8 @@ pi install npm:@vndv/pi-codegraph@0.1.7
 pi
 ```
 
-### rpiv-pi
-Pi Agent를 위한 스킬 기반 개발 워크플로. 다섯 가지 스킬(연구, 설계, 계획, 구현, 검증)과 이를 구성하는 공유 하위 에이전트들을 보여줌.
+### spec-kit
+https://github.com/github/spec-kit
 ```
-pi install npm:@juicesharp/rpiv-pi
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
 ```
