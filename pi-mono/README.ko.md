@@ -18,7 +18,9 @@ pi install npm:context-mode
 ### gentle-engram
 기본적으로 로컬에 저장되고, 필요할 때는 클라우드에 저장하며, 모든 에이전트에서 검색할 수 있도록 도와주는 영구 메모리.
 ```
+brew install gentleman-programming/tap/engram
 pi install npm:gentle-engram
+engram setup pi
 ```
 
 ### @vndv/pi-codegraph
