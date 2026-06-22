@@ -33,6 +33,14 @@ pi install npm:@vndv/pi-codegraph@0.1.7
 pi
 ```
 
+### pi-flow
+멀티 백엔드 서브에이전트 및 동적 워크플로 오케스트레이션
+
+source: https://github.com/kky42/pi-flow
+```
+pi install npm:@kky42/pi-flow
+```
+
 ### rpiv-pi
 spec-kit과 택1 (소규모 작업)
 ```
