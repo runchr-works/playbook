@@ -19,6 +19,10 @@
 | [ui-skills](https://www.ui-skills.com/) | Skills for Design Engineers |
 | [skillui](https://skillui.vercel.app/) | Point skillui at any URL, repo, or folder. Get exact colors, fonts, spacing, components, animations, and scroll journeys packaged as a .skill file. Then open Claude Code and build the UI. |
 
+- https://www.designmode.app/
+- https://getyoink.dev/
+- 
+
 ## Philosophy
 
 We build products. Along the way, we find tools, patterns, and conventions that
