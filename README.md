@@ -1,39 +1,48 @@
-# Playbook
+# 플레이북 (Playbook)
 
-**runchr shared monorepo** — conventions, tools, and documentation for how we build.
+**runchr 공유 모노레포** — 우리가 제품을 만들며 실제로 사용하는 규칙, 도구, 문서들을 모아둔 저장소입니다.
 
 ## AGENTS.md
+
 [AGENTS.md](./AGENTS.md)
 
-## Packages
-| Package | Description |
-|---------|-------------|
-| [memkit](./memkit) | One-step setup for coding agent MCP tools |
+## 패키지 (Packages)
 
-## Favorites
-| Favorite | Description |
-|---------|-------------|
-| [makeable.me](https://makeable.me/en) | Makeable extracts the design system and recreates the visible frontend as editable React code. |
-| [designmd](https://www.designmd.supply/) | A supply of design md, generated. Drop in any public domain — get back a Google-spec DESIGN.md ready to feed an AI agent. |
-| [herdr](https://herdr.dev/) | Herdr is an agent runtime that runs inside your terminal. Keep your shell, SSH setup, fonts, and keybinds; add tmux-style persistence, mouse-native panes, blocked, working, and done agent state, and an API agents can drive. |
-| [ui-skills](https://www.ui-skills.com/) | Skills for Design Engineers |
-| [skillui](https://skillui.vercel.app/) | Point skillui at any URL, repo, or folder. Get exact colors, fonts, spacing, components, animations, and scroll journeys packaged as a .skill file. Then open Claude Code and build the UI. |
+| 패키지                | 설명                                 |
+| ------------------ | ---------------------------------- |
+| [memkit](./memkit) | 코딩 에이전트용 MCP 도구를 한 번에 설정할 수 있는 패키지 |
 
-- https://www.designmode.app/
-- https://getyoink.dev/
-- 
+## 즐겨찾기 (Favorites)
 
-## Philosophy
+| 이름                                       | 설명                                                                                                             |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| [makeable.me](https://makeable.me/en)    | 디자인 시스템을 추출하고, 화면에 보이는 프론트엔드를 수정 가능한 React 코드로 재구성합니다.                                                         |
+| [designmd](https://www.designmd.supply/) | 공개된 도메인을 입력하면 Google 스타일의 DESIGN.md를 생성하여 AI 에이전트에 바로 활용할 수 있습니다.                                              |
+| [herdr](https://herdr.dev/)              | 터미널 내부에서 동작하는 에이전트 런타임입니다. 기존 셸 환경과 SSH 설정은 그대로 유지하면서, tmux 스타일의 지속성, 마우스 기반 패널, 에이전트 상태 관리, API 제어 기능을 제공합니다. |
+| [ui-skills](https://www.ui-skills.com/)  | 디자인 엔지니어를 위한 다양한 UI 스킬 모음입니다.                                                                                  |
+| [skillui](https://skillui.vercel.app/)   | URL, 저장소, 또는 폴더를 분석하여 색상, 폰트, 간격, 컴포넌트, 애니메이션 등을 `.skill` 파일로 생성하고, 이를 통해 Claude Code에서 동일한 UI를 구현할 수 있습니다.    |
 
-We build products. Along the way, we find tools, patterns, and conventions that
-actually work. Playbook is where we share them — not as theory, but as things we
-use every day.
+추가 참고 자료:
 
-Current focus: giving coding agents direct access to the best MCP tools —
-Hindsight for memory, CodeGraph for code intelligence, and context-mode for
-session tracking. No thin proxies, no filtered features.
+* https://www.designmode.app/
+* https://getyoink.dev/
 
-## Development
+## 철학 (Philosophy)
+
+우리는 제품을 만듭니다.
+
+그 과정에서 실제로 효과가 있었던 도구, 패턴, 그리고 개발 규칙들을 발견합니다.
+Playbook은 그런 경험들을 단순한 이론이 아니라, 우리가 매일 사용하는 실전 사례로 공유하는 공간입니다.
+
+현재의 핵심 목표는 코딩 에이전트가 최고의 MCP 도구에 직접 접근할 수 있도록 하는 것입니다.
+
+* **Hindsight**: 장기 기억 관리
+* **CodeGraph**: 코드 이해 및 탐색
+* **context-mode**: 세션 및 작업 맥락 추적
+
+중간 프록시나 제한된 기능 없이, 원래의 기능을 그대로 활용하는 것을 지향합니다.
+
+## 개발 (Development)
 
 ```bash
 git clone https://github.com/runchr-works/playbook.git
