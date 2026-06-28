@@ -4,7 +4,7 @@
 
 ## AGENTS.md
 
-[AGENTS.md](./AGENTS.md)
+[AGENTS.md](./agents-md)
 
 ## 패키지 (Packages)
 
