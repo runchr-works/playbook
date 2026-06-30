@@ -6,6 +6,10 @@
 
 [AGENTS.md](./agents-md)
 
+## Agent Tools
+* https://github.com/Gitlawb/openclaude
+* https://github.com/lidge-jun/opencodex
+
 ## 패키지 (Packages)
 
 | 패키지                | 설명                                 |
